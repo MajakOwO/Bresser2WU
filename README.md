@@ -87,9 +87,62 @@ Built on ESP32 with PlatformIO, featuring WiFiManager for easy configuration.
    - Configure APRS: Callsign (e.g., SQ8NA-15), Password, Latitude, Longitude, Comment (optional)
    - Save and restart
 
+## Hardware Configuration
+
+### Radio Module & GPIO Pinout
+
+The project supports multiple LoRa radio chips. Hardware configuration is set in [src/WeatherSensorCfg.h](src/WeatherSensorCfg.h):
+
+**Supported Radio Chips:**
+- `SX1276` (RFM95W) – common on LILYGO, Heltec, Adafruit boards
+- `SX1262` – newer chip, used on Heltec Wireless Stick V3 and others
+- `CC1101` – alternative for ESP8266
+- `LR1121` – latest LoRa chip on selected boards
+
+**Default Configuration (esp32dev):**
+```c
+#define USE_SX1262             // Select radio chip
+#define PIN_RECEIVER_CS   27   // Chip Select
+#define PIN_RECEIVER_IRQ  21   // Interrupt (DIO0)
+#define PIN_RECEIVER_GPIO 33   // GPIO (DIO1 or BUSY)
+#define PIN_RECEIVER_RST  32   // Reset
+```
+
+**ESP32 → SX1262 Wiring (default pinout):**
+
+| ESP32 | SX1262 | Signal |
+|-------|--------|--------|
+| 3V3   | VCC    | Power  |
+| GND   | GND    | Ground |
+| 18    | SCK    | SPI Clock |
+| 19    | MISO   | SPI Data In |
+| 23    | MOSI   | SPI Data Out |
+| 27    | NSS    | Chip Select |
+| 21    | DIO1   | Interrupt |
+| 33    | BUSY   | Busy Signal |
+| 32    | RESET  | Reset |
+
+**To use a different board:**
+1. Open `platformio.ini` and find your board environment
+2. Check the matching board variant in `WeatherSensorCfg.h`
+3. If using a generic ESP32 with custom pinning, uncomment the alternative `#define` lines (LORA_SPI_BUS, LORA_CS, LORA_SCK, LORA_MISO, LORA_MOSI)
+4. Rebuild: `pio run -e <your-environment> -t upload`
+
+**Board Variants:**
+Each board variant has pre-configured GPIO pins. See the [Board Variants Guide](docs/BOARD_VARIANTS.md) for the full list and corresponding `#define` in WeatherSensorCfg.h.
+
 ## Configuration Details
 
 ### Weather Underground
+
+**First time setup:**
+1. Create a Weather Underground account at [wunderground.com](https://www.wunderground.com)
+2. Add a new personal weather station at [https://www.wunderground.com/member/devices](https://www.wunderground.com/member/devices)
+3. Select **"Other"** as the hardware type
+4. Get your **Station ID** and **API Key** from your device dashboard
+5. During WiFiManager configuration, enter these credentials
+
+**Settings:**
 - **Station ID**: Your WU station identifier (e.g., `KZZXY50`)
 - **Key**: API key from Weather Underground account
 - Data sent every 15 seconds to `wunderground.com`
