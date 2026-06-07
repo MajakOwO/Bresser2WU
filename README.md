@@ -207,6 +207,24 @@ pio device monitor --baud 115200
 pio run -t clean
 ```
 
+### Building for Multiple Board Variants
+
+Pre-compiled firmware binaries are available in the [Releases](https://github.com/MajakOwO/Bresser2WU/releases) section.
+
+To build for a specific board variant:
+```bash
+# List available environments
+pio run --list-envs
+
+# Build for a specific environment (e.g., Heltec WiFi LoRa 32 V3)
+pio run -e heltec-wifi-lora-32-v3 -t upload
+
+# Build all environments
+pio run
+```
+
+Firmware binaries are located in `.pio/build/<environment>/firmware.bin`
+
 ### Custom Board Configuration
 Edit `platformio.ini`:
 ```ini
