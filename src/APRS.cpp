@@ -138,47 +138,34 @@ String APRS::formatWeatherData(float tempF,
                                   int windDirection,
                                   float rainfallHourly,
                                   float rainfallDaily,
-                                  float pressureHPa,
+                                  float pressureInHg,
                                   float solarRadiation,
                                   bool batteryOk,
                                   float rssiDbm) {
     // APRS weather format (APRS spec WX.TXT / spec-wx.txt):
-    // !DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXPXXXXXrXXXpXXX
+    // !DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXrXXXpXXX
     // Where:
     // _ddd = wind direction (0-360 degrees)
     // /sss = sustained 1-minute wind speed (m/s)
-    // ggg = peak/gust wind speed (m/s)
+    // ggg = peak/gust wind speed (m/s) 
     // tXXX = temperature in Fahrenheit (-99 to +150)
     // hXX = humidity in percent (00-99, where 00 = 100%)
-    // PXXXXX = barometric pressure in tenths of millibars (e.g. P10125 = 1012.5 mb)
     // rXXX = rainfall in last hour (in 0.01" increments)
     // pXXX = rainfall in last 24 hours (in 0.01" increments)
     
-    // Convert coordinates to APRS format (degrees minutes, hundredths)
-    int latDeg = (int)abs(latitude);
-    int latMinHundredths = static_cast<int>(((abs(latitude) - latDeg) * 60.0f) * 100.0f + 0.5f);
-    if (latMinHundredths >= 6000) {
-        latMinHundredths -= 6000;
-        latDeg++;
-    }
-    int latMin = latMinHundredths / 100;
-    int latMinFrac = latMinHundredths % 100;
+    // Convert coordinates to APRS format (degrees minutes)
+    float latDeg = abs(latitude);
+    float latMin = (latDeg - (int)latDeg) * 60;
     char latChar = latitude >= 0 ? 'N' : 'S';
-
-    int lonDeg = (int)abs(longitude);
-    int lonMinHundredths = static_cast<int>(((abs(longitude) - lonDeg) * 60.0f) * 100.0f + 0.5f);
-    if (lonMinHundredths >= 6000) {
-        lonMinHundredths -= 6000;
-        lonDeg++;
-    }
-    int lonMin = lonMinHundredths / 100;
-    int lonMinFrac = lonMinHundredths % 100;
+    
+    float lonDeg = abs(longitude);
+    float lonMin = (lonDeg - (int)lonDeg) * 60;
     char lonChar = longitude >= 0 ? 'E' : 'W';
     
     // Format APRS position and weather string
     char aprsData[256];
     
-    // APRS packet format: !DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXPXXXXXrXXXpXXX
+    // APRS packet format: !DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXrXXXpXXX
     
     // Humidity: 00=100%, 01-99=percent
     int humidity_aprs = (int)humidity;
@@ -191,21 +178,16 @@ String APRS::formatWeatherData(float tempF,
     int rainDailyHundredths = static_cast<int>(rainfallDaily * 100.0f + 0.5f);
     if (rainDailyHundredths < 0) rainDailyHundredths = 0;
     if (rainDailyHundredths > 999) rainDailyHundredths = 999;
-
-    int pressureTenthsMb = static_cast<int>(pressureHPa * 10.0f + 0.5f);
-    if (pressureTenthsMb < 0) pressureTenthsMb = 0;
-    if (pressureTenthsMb > 99999) pressureTenthsMb = 99999;
     
     snprintf(aprsData, sizeof(aprsData),
-        "!%02d%02d.%02d%c/%03d%02d.%02d%c_%03d/%03dg%03dt%03dh%02dP%05dr%03dp%03d",
-        latDeg, latMin, latMinFrac, latChar,
-        lonDeg, lonMin, lonMinFrac, lonChar,
+        "!%02d%05.2f%c/%03d%05.2f%c_%03d/%03dg%03dt%03dh%02dr%03dp%03d",
+        (int)latDeg, latMin, latChar,
+        (int)lonDeg, lonMin, lonChar,
         (int)windDirection,
         (int)windSpeedMs,
         (int)windGustMs,
         (int)tempF,
         humidity_aprs,
-        pressureTenthsMb,
         rainHourlyHundredths,
         rainDailyHundredths
     );
@@ -224,7 +206,7 @@ String APRS::formatWeatherData(float tempF,
 bool APRS::sendWeatherData(float tempF, float humidity, float windSpeedMs, 
                           float windGustMs, int windDirection, float rainfallHourly,
                           float rainfallDaily,
-                          float pressureHPa, float solarRadiation,
+                          float pressureInHg, float solarRadiation,
                           bool batteryOk, float rssiDbm) {
     if (!connectToServer()) {
         return false;
@@ -232,7 +214,7 @@ bool APRS::sendWeatherData(float tempF, float humidity, float windSpeedMs,
     
     // Format the weather data as APRS packet
     String weatherData = formatWeatherData(tempF, humidity, windSpeedMs, windGustMs, 
-                                          windDirection, rainfallHourly, rainfallDaily, pressureHPa, solarRadiation,
+                                          windDirection, rainfallHourly, rainfallDaily, pressureInHg, solarRadiation,
                                           batteryOk, rssiDbm);
     
     // APRS packet format: callsign>APRS,qAS,SOURCE:/weather_data

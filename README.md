@@ -157,7 +157,7 @@ Each board variant has pre-configured GPIO pins. See the [Board Variants Guide](
 
 ### APRS Packet Format
 ```
-!DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXPXXXXXrXXXpXXX Bat:OK RSSI:-110.5dBm
+!DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXrXXXpXXX Bat:OK RSSI:-110.5dBm
 ```
 - Position: Latitude/Longitude in degrees/minutes
 - Wind: Direction / Speed / Gust (m/s)
@@ -217,11 +217,6 @@ pio run
 ```
 
 Firmware binaries are located in `.pio/build/<environment>/firmware.bin`
-
-### GitHub precompiled builds
-This repository also includes a GitHub Actions workflow at `.github/workflows/platformio-build.yml`.
-It can precompile firmware for supported board environments on each push to `main` and on manual dispatch.
-Build artifacts are uploaded automatically and can be downloaded from the workflow run page.
 
 ### Custom Board Configuration
 Edit `platformio.ini`:

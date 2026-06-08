@@ -42,7 +42,7 @@ private:
                              int windDirection,
                              float rainfallHourly,
                              float rainfallDaily,
-                             float pressureHPa,
+                             float pressureInHg,
                              float solarRadiation,
                              bool batteryOk,
                              float rssiDbm);
@@ -58,7 +58,7 @@ public:
     bool sendWeatherData(float tempF, float humidity, float windSpeedMs, 
                         float windGustMs, int windDirection, float rainfallHourly,
                         float rainfallDaily,
-                        float pressureHPa, float solarRadiation, 
+                        float pressureInHg, float solarRadiation, 
                         bool batteryOk, float rssiDbm);
     
     // Check and maintain connection
