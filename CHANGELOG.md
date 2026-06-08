@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.1] - 2026-06-08
 
+### Added
+
+- GitHub Actions automatically publishes firmware binaries to releases on tag push
+
 ### Changed
 
 - APRS wind speed and gust transmission changed to meters per second (m/s)
