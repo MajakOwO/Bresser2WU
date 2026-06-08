@@ -5,6 +5,13 @@ All notable changes to the Bresser Weather Sensor to WU + APRS-IS Gateway projec
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-06-08
+
+### Changed
+
+- APRS wind speed and gust transmission changed to meters per second (m/s)
+- APRS weather packet now includes barometric pressure as `Pxxxxx` (tenths of millibars)
+
 ## [1.0.0] - 2026
 
 ### Added
@@ -32,9 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **APRS Features**
   - TCP connection to `rotate.aprs.net:14580`
   - Automatic reconnection with 5-minute retry interval
-  - APRS weather packet format: `!DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXrXXXpXXX`
+  - APRS weather packet format: `!DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXPXXXXXrXXXpXXX`
   - Device health metrics: Battery status (OK/Low) and RSSI in beacon comment
-  - Per-spec encoding: humidity (00=100%, 01-99=percent), wind (mph), temperature (°F), rain (0.01"), pressure (inHg)
+  - Per-spec encoding: humidity (00=100%, 01-99=percent), wind (m/s), temperature (°F), rain (0.01"), pressure (Pxxxxx in tenths of millibars)
 
 - **Sensor Support**
   - Bresser 7-in-1 weather sensor (example: sensor ID A86A)
@@ -57,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Platform**: ESP32 with Arduino framework
 - **Build System**: PlatformIO
+- **CI/CD**: Added GitHub Actions workflow to precompile firmware artifacts for supported board variants
 - **Core Libraries**:
   - BresserWeatherSensorReceiver (sensor decoding)
   - RadioLib 7.6.0 (868 MHz radio interface)

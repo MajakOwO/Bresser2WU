@@ -133,23 +133,24 @@ void APRS::sendLoginString() {
 
 String APRS::formatWeatherData(float tempF,
                                   float humidity,
-                                  float windSpeedMph,
-                                  float windGustMph,
+                                  float windSpeedMs,
+                                  float windGustMs,
                                   int windDirection,
                                   float rainfallHourly,
                                   float rainfallDaily,
-                                  float pressureInHg,
+                                  float pressureHPa,
                                   float solarRadiation,
                                   bool batteryOk,
                                   float rssiDbm) {
     // APRS weather format (APRS spec WX.TXT / spec-wx.txt):
-    // !DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXrXXXpXXX
+    // !DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXPXXXXXrXXXpXXX
     // Where:
     // _ddd = wind direction (0-360 degrees)
-    // /sss = sustained 1-minute wind speed (mph)
-    // ggg = peak/gust wind speed (mph) 
+    // /sss = sustained 1-minute wind speed (m/s)
+    // ggg = peak/gust wind speed (m/s)
     // tXXX = temperature in Fahrenheit (-99 to +150)
     // hXX = humidity in percent (00-99, where 00 = 100%)
+    // PXXXXX = barometric pressure in tenths of millibars (e.g. P10125 = 1012.5 mb)
     // rXXX = rainfall in last hour (in 0.01" increments)
     // pXXX = rainfall in last 24 hours (in 0.01" increments)
     
@@ -165,7 +166,7 @@ String APRS::formatWeatherData(float tempF,
     // Format APRS position and weather string
     char aprsData[256];
     
-    // APRS packet format: !DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXrXXXpXXX
+    // APRS packet format: !DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXPXXXXXrXXXpXXX
     
     // Humidity: 00=100%, 01-99=percent
     int humidity_aprs = (int)humidity;
@@ -178,16 +179,21 @@ String APRS::formatWeatherData(float tempF,
     int rainDailyHundredths = static_cast<int>(rainfallDaily * 100.0f + 0.5f);
     if (rainDailyHundredths < 0) rainDailyHundredths = 0;
     if (rainDailyHundredths > 999) rainDailyHundredths = 999;
+
+    int pressureTenthsMb = static_cast<int>(pressureHPa * 10.0f + 0.5f);
+    if (pressureTenthsMb < 0) pressureTenthsMb = 0;
+    if (pressureTenthsMb > 99999) pressureTenthsMb = 99999;
     
     snprintf(aprsData, sizeof(aprsData),
-        "!%02d%05.2f%c/%03d%05.2f%c_%03d/%03dg%03dt%03dh%02dr%03dp%03d",
+        "!%02d%05.2f%c/%03d%05.2f%c_%03d/%03dg%03dt%03dh%02dP%05dr%03dp%03d",
         (int)latDeg, latMin, latChar,
         (int)lonDeg, lonMin, lonChar,
         (int)windDirection,
-        (int)windSpeedMph,
-        (int)windGustMph,
+        (int)windSpeedMs,
+        (int)windGustMs,
         (int)tempF,
         humidity_aprs,
+        pressureTenthsMb,
         rainHourlyHundredths,
         rainDailyHundredths
     );
@@ -203,18 +209,18 @@ String APRS::formatWeatherData(float tempF,
     return result;
 }
 
-bool APRS::sendWeatherData(float tempF, float humidity, float windSpeedMph, 
-                          float windGustMph, int windDirection, float rainfallHourly,
+bool APRS::sendWeatherData(float tempF, float humidity, float windSpeedMs, 
+                          float windGustMs, int windDirection, float rainfallHourly,
                           float rainfallDaily,
-                          float pressureInHg, float solarRadiation,
+                          float pressureHPa, float solarRadiation,
                           bool batteryOk, float rssiDbm) {
     if (!connectToServer()) {
         return false;
     }
     
     // Format the weather data as APRS packet
-    String weatherData = formatWeatherData(tempF, humidity, windSpeedMph, windGustMph, 
-                                          windDirection, rainfallHourly, rainfallDaily, pressureInHg, solarRadiation,
+    String weatherData = formatWeatherData(tempF, humidity, windSpeedMs, windGustMs, 
+                                          windDirection, rainfallHourly, rainfallDaily, pressureHPa, solarRadiation,
                                           batteryOk, rssiDbm);
     
     // APRS packet format: callsign>APRS,qAS,SOURCE:/weather_data

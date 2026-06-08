@@ -97,8 +97,8 @@ The APRS packet includes:
 |-----------|--------|---------|
 | **Position** | DM.MM format | N5200.12/W10700.34 |
 | **Wind Direction** | Degrees (0-360) | _225 = southwest |
-| **Wind Speed** | mph | /045 avg speed |
-| **Wind Gust** | mph | /055 gust speed |
+| **Wind Speed** | m/s | /045 avg speed |
+| **Wind Gust** | m/s | /055 gust speed |
 | **Temperature** | °F | t068 = 68°F |
 | **Humidity** | 0-99% | h65 = 65% |
 | **Pressure** | mb × 10 | P10125 = 1012.5mb |

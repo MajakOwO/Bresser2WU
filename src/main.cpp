@@ -89,6 +89,8 @@ struct WeatherData {
     float dewpointF;
     float windSpeedMph;
     float windGustMph;
+    float windSpeedMs;
+    float windGustMs;
     int windDirection;
     float pressureHPa;
     float pressureInHg;
@@ -352,6 +354,8 @@ void calculateWeatherData(const WeatherSensor::Sensor& sensor) {
     weatherData.dewpointF = weatherData.dewpointC * 9.0 / 5.0 + 32.0;
     weatherData.windSpeedMph = sensor.w.wind_avg_meter_sec * 2.23694;
     weatherData.windGustMph = sensor.w.wind_gust_meter_sec * 2.23694;
+    weatherData.windSpeedMs = sensor.w.wind_avg_meter_sec;
+    weatherData.windGustMs = sensor.w.wind_gust_meter_sec;
     weatherData.windDirection = (int)sensor.w.wind_direction_deg;
     weatherData.solarRadiation = sensor.w.light_klx * 7.9;
     
@@ -472,12 +476,12 @@ bool sendToAPRS() {
     bool success = aprs.sendWeatherData(
         weatherData.tempF,
         weatherData.humidity,
-        weatherData.windSpeedMph,
-        weatherData.windGustMph,
+        weatherData.windSpeedMs,
+        weatherData.windGustMs,
         weatherData.windDirection,
         weatherData.rainHourlyIn,
         weatherData.rainDailyIn,
-        weatherData.pressureInHg,
+        weatherData.pressureHPa,
         weatherData.solarRadiation,
         ws.sensor[i].battery_ok,
         ws.sensor[i].rssi

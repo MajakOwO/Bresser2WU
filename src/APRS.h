@@ -37,12 +37,12 @@ private:
     void sendLoginString();
     String formatWeatherData(float tempF,
                              float humidity,
-                             float windSpeedMph,
-                             float windGustMph,
+                             float windSpeedMs,
+                             float windGustMs,
                              int windDirection,
                              float rainfallHourly,
                              float rainfallDaily,
-                             float pressureInHg,
+                             float pressureHPa,
                              float solarRadiation,
                              bool batteryOk,
                              float rssiDbm);
@@ -55,10 +55,10 @@ public:
     void begin(const String& callSign, const String& pwd, float lat, float lon);
     
     // Send weather data to APRS-IS
-    bool sendWeatherData(float tempF, float humidity, float windSpeedMph, 
-                        float windGustMph, int windDirection, float rainfallHourly,
+    bool sendWeatherData(float tempF, float humidity, float windSpeedMs, 
+                        float windGustMs, int windDirection, float rainfallHourly,
                         float rainfallDaily,
-                        float pressureInHg, float solarRadiation, 
+                        float pressureHPa, float solarRadiation, 
                         bool batteryOk, float rssiDbm);
     
     // Check and maintain connection
