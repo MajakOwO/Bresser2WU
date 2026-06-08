@@ -154,13 +154,25 @@ String APRS::formatWeatherData(float tempF,
     // rXXX = rainfall in last hour (in 0.01" increments)
     // pXXX = rainfall in last 24 hours (in 0.01" increments)
     
-    // Convert coordinates to APRS format (degrees minutes)
-    float latDeg = abs(latitude);
-    float latMin = (latDeg - (int)latDeg) * 60;
+    // Convert coordinates to APRS format (degrees minutes, hundredths)
+    int latDeg = (int)abs(latitude);
+    int latMinHundredths = static_cast<int>(((abs(latitude) - latDeg) * 60.0f) * 100.0f + 0.5f);
+    if (latMinHundredths >= 6000) {
+        latMinHundredths -= 6000;
+        latDeg++;
+    }
+    int latMin = latMinHundredths / 100;
+    int latMinFrac = latMinHundredths % 100;
     char latChar = latitude >= 0 ? 'N' : 'S';
-    
-    float lonDeg = abs(longitude);
-    float lonMin = (lonDeg - (int)lonDeg) * 60;
+
+    int lonDeg = (int)abs(longitude);
+    int lonMinHundredths = static_cast<int>(((abs(longitude) - lonDeg) * 60.0f) * 100.0f + 0.5f);
+    if (lonMinHundredths >= 6000) {
+        lonMinHundredths -= 6000;
+        lonDeg++;
+    }
+    int lonMin = lonMinHundredths / 100;
+    int lonMinFrac = lonMinHundredths % 100;
     char lonChar = longitude >= 0 ? 'E' : 'W';
     
     // Format APRS position and weather string
@@ -185,9 +197,9 @@ String APRS::formatWeatherData(float tempF,
     if (pressureTenthsMb > 99999) pressureTenthsMb = 99999;
     
     snprintf(aprsData, sizeof(aprsData),
-        "!%02d%05.2f%c/%03d%05.2f%c_%03d/%03dg%03dt%03dh%02dP%05dr%03dp%03d",
-        (int)latDeg, latMin, latChar,
-        (int)lonDeg, lonMin, lonChar,
+        "!%02d%02d.%02d%c/%03d%02d.%02d%c_%03d/%03dg%03dt%03dh%02dP%05dr%03dp%03d",
+        latDeg, latMin, latMinFrac, latChar,
+        lonDeg, lonMin, lonMinFrac, lonChar,
         (int)windDirection,
         (int)windSpeedMs,
         (int)windGustMs,

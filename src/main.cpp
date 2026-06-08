@@ -23,6 +23,7 @@
 #include "InitBoard.h"
 #include "APRS.h"
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <WiFiManager.h>
 #include <Preferences.h>
@@ -433,8 +434,10 @@ void sendToWU() {
     url += "&softwaretype=ESP32-Bresser7in1&action=updateraw";
 
     Serial.println(url);
+    WiFiClientSecure client;
+    client.setInsecure();
     HTTPClient http;
-    http.begin(url);
+    http.begin(client, url);
     int code = http.GET();
     Serial.printf("WU HTTP: %d\n", code);
 
