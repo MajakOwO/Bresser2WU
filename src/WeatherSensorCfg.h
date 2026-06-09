@@ -455,18 +455,55 @@
     #endif
 #elif defined(ESP32)
     #pragma message("ESP32 defined; this is a generic (i.e. non-specific) target")
-    #pragma message("Cross check if the selected GPIO pins are really available on your board.")
-    #pragma message("Connect a radio module with a supported chip.")
-    #pragma message("Select the chip by setting the appropriate define.")
-    //#define USE_SX1276
-    #define USE_SX1262
-    //#define USE_CC1101
-    //#define USE_LR1121
-    // Generic pinning for ESP32 development boards
-    #define PIN_RECEIVER_CS   27
-    #define PIN_RECEIVER_IRQ  21
-    #define PIN_RECEIVER_GPIO 33
-    #define PIN_RECEIVER_RST  32
+    #pragma message("Select radio module variant below by commenting/uncommenting")
+    
+    // ===== SELECT ONE OF THE VARIANTS BELOW =====
+    
+    // --- Variant 1: SX1262 (LoRa module) ---
+    #define ESP32_VARIANT_SX1262
+    //#define ESP32_VARIANT_SX1276
+    //#define ESP32_VARIANT_CC1101
+    //#define ESP32_VARIANT_LR1121
+    
+    // --- SX1262 Configuration ---
+    #if defined(ESP32_VARIANT_SX1262)
+        #pragma message("ESP32 variant: SX1262 (LoRa)")
+        #define USE_SX1262
+        #define PIN_RECEIVER_CS   27
+        #define PIN_RECEIVER_IRQ  21
+        #define PIN_RECEIVER_GPIO 33
+        #define PIN_RECEIVER_RST  32
+    
+    // --- SX1276 Configuration ---
+    #elif defined(ESP32_VARIANT_SX1276)
+        #pragma message("ESP32 variant: SX1276 (LoRa)")
+        #define USE_SX1276
+        #define PIN_RECEIVER_CS   27
+        #define PIN_RECEIVER_IRQ  21
+        #define PIN_RECEIVER_GPIO 33
+        #define PIN_RECEIVER_RST  32
+    
+    // --- CC1101 Configuration ---
+    #elif defined(ESP32_VARIANT_CC1101)
+        #pragma message("ESP32 variant: CC1101")
+        #define USE_CC1101
+        #define PIN_RECEIVER_CS   27
+        #define PIN_RECEIVER_IRQ  21
+        #define PIN_RECEIVER_GPIO 33
+        #define PIN_RECEIVER_RST  32
+    
+    // --- LR1121 Configuration ---
+    #elif defined(ESP32_VARIANT_LR1121)
+        #pragma message("ESP32 variant: LR1121")
+        #define USE_LR1121
+        #define PIN_RECEIVER_CS   27
+        #define PIN_RECEIVER_IRQ  21
+        #define PIN_RECEIVER_GPIO 33
+        #define PIN_RECEIVER_RST  32
+    
+    #else
+        #pragma error("ESP32: No radio variant selected! Please uncomment one of: ESP32_VARIANT_SX1262, ESP32_VARIANT_SX1276, ESP32_VARIANT_CC1101, ESP32_VARIANT_LR1121")
+    #endif
     
     // When using SPI bus other than FSPI, e.g. HSPI, define the following
     //#define LORA_SPI_BUS    HSPI

@@ -10,7 +10,10 @@ jobs:
     strategy:
       matrix:
         environment:
-          - esp32dev
+          - esp32dev-sx1262
+          - esp32dev-sx1276
+          - esp32dev-cc1101
+          - esp32dev-lr1121
           - ttgo-lora32-v2
           - ttgo-lora32-v21
           - heltec-wireless-stick-v3
