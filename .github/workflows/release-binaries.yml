@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload combined binary to release
         if: steps.extract.outputs.found == 'true' && github.event_name == 'release'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: combined_${{ matrix.environment }}.bin
         env:
@@ -81,8 +81,8 @@ jobs:
 
       - name: Upload combined binary as artifact
         if: steps.extract.outputs.found == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: combined-binaries
+          name: combined-binaries-${{ matrix.environment }}
           path: combined_${{ matrix.environment }}.bin
           retention-days: 30
