@@ -29,19 +29,42 @@ pio run -e heltec-wifi-lora-32-v3 -t upload
 
 ## Available Board Variants
 
+### Generic ESP32 DevKit (Multiple Radio Options)
+
+| Environment | Radio Module | Frequency | Power Efficiency | Notes |
+|---|---|---|---|---|
+| **`esp32dev-sx1262`** | SX1262 | 868 MHz | ⭐⭐⭐⭐⭐ | **Recommended** - New, efficient, best range |
+| **`esp32dev-sx1276`** | SX1276 (RFM95W) | 868 MHz | ⭐⭐⭐ | Popular choice, widely available |
+| **`esp32dev-cc1101`** | CC1101 | 868 MHz | ⭐⭐⭐⭐ | Alternative option, lower power |
+| **`esp32dev-lr1121`** | LR1121 | 868 MHz | ⭐⭐⭐⭐⭐ | Latest LoRa chip, future-proof |
+
+**Default GPIO Pinout:**
+- **CS (Chip Select)**: GPIO 27
+- **IRQ (Interrupt)**: GPIO 21
+- **BUSY/GPIO**: GPIO 33
+- **RST (Reset)**: GPIO 32
+- **SPI**: SCK=18, MOSI=23, MISO=19
+
+See [**Radio Modules Guide**](RADIO_MODULES.md) for detailed comparison and custom pinning options.
+
+### Dedicated Board Variants
+
 | Environment | Board | Radio | Frequency | Notes |
 |---|---|---|---|---|
-| `esp32dev` | Generic ESP32 DevKit | SX1276 | 868 MHz | Default; adjust pins in WeatherSensorCfg.h |
-| `ttgo-lora32-v2` | LILYGO TTGO LoRa32 V2 | SX1276 | 868 MHz | Popular, integrated antenna |
-| `ttgo-lora32-v21` | LILYGO TTGO LoRa32 V2.1 | SX1276 | 868 MHz | Newer revision of V2 |
-| `heltec-wireless-stick-v3` | Heltec Wireless Stick V3 | SX1262 | 868 MHz | ESP32-S3, excellent range |
-| `heltec-wifi-lora-32-v2` | Heltec WiFi LoRa 32 V2 | SX1276 | 868 MHz | With built-in display |
-| `heltec-wifi-lora-32-v3` | Heltec WiFi LoRa 32 V3 | SX1262 | 868 MHz | Latest Heltec version |
-| `heltec-wifi-lora-32-v4` | Heltec WiFi LoRa 32 V4 | SX1262 | 868 MHz | Newest Heltec board |
-| `adafruit-feather-esp32` | Adafruit Feather ESP32 | RFM95W (SX1276) | 868 MHz | With FeatherWing RFM95W |
-| `lilygo-t3-s3-sx1262` | LilyGo T3-S3 | SX1262 | 868 MHz | ESP32-S3 variant |
-| `lilygo-t3-s3-sx1276` | LilyGo T3-S3 | SX1276 | 868 MHz | Alternative radio chip |
-| `m5stack-core2` | M5Stack Core2 | LoRa Module | 868 MHz | With M5Stack LoRa868 Module |
+| `ttgo-lora32-v1` | LILYGO TTGO LoRa32 V1 | SX1276 | 868 MHz | First generation, integrated antenna |
+| `ttgo-lora32-v2` | LILYGO TTGO LoRa32 V2 | SX1276 | 868 MHz | Popular choice, excellent value |
+| `ttgo-lora32-v21` | LILYGO TTGO LoRa32 V2.1 | SX1276 | 868 MHz | Improved V2 revision |
+| `heltec-wireless-stick` | Heltec Wireless Stick | SX1276 | 868 MHz | Compact form factor |
+| `heltec-wireless-stick-v3` | Heltec Wireless Stick V3 | SX1262 | 868 MHz | ESP32-S3, excellent range, compact |
+| `heltec-wireless-stick-lite` | Heltec Wireless Stick Lite V3 | SX1262 | 868 MHz | Lighter version of Stick V3 |
+| `heltec-wifi-lora-32-v2` | Heltec WiFi LoRa 32 V2 | SX1276 | 868 MHz | Larger board, built-in OLED display |
+| `heltec-wifi-lora-32-v3` | Heltec WiFi LoRa 32 V3 | SX1262 | 868 MHz | Latest Heltec flagship with display |
+| `heltec-wifi-lora-32-v4` | Heltec WiFi LoRa 32 V4 | SX1262 | 868 MHz | Newest Heltec version, improved design |
+| `lilygo-t3-s3-sx1262` | LilyGo T3-S3 | SX1262 | 868 MHz | ESP32-S3 processor, excellent performance |
+| `lilygo-t3-s3-sx1276` | LilyGo T3-S3 | SX1276 | 868 MHz | Same board, different radio option |
+| `lilygo-t3-s3-lr1121` | LilyGo T3-S3 | LR1121 | 868 MHz | Latest technology on T3-S3 platform |
+| `seeed-xiao-esp32s3` | Seeed XIAO ESP32S3 | SX1262 | 868 MHz | Tiny form factor, Wio-SX1262 module |
+| `esp32s3-dev` | Generic ESP32-S3 DevKit | SX1276 | 868 MHz | Generic S3 fallback variant |
 
 ## Hardware Setup by Variant
 

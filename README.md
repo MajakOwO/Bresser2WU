@@ -89,47 +89,124 @@ Built on ESP32 with PlatformIO, featuring WiFiManager for easy configuration.
 
 ## Hardware Configuration
 
-### Radio Module & GPIO Pinout
+### Supported Platforms
 
-The project supports multiple LoRa radio chips. Hardware configuration is set in [src/WeatherSensorCfg.h](src/WeatherSensorCfg.h):
+The project runs on **20+ ESP32 board variants** with different LoRa radio modules:
 
-**Supported Radio Chips:**
-- `SX1276` (RFM95W) – common on LILYGO, Heltec, Adafruit boards
-- `SX1262` – newer chip, used on Heltec Wireless Stick V3 and others
-- `CC1101` – alternative for ESP8266
-- `LR1121` – latest LoRa chip on selected boards
+1. **Generic ESP32 DevKit** (4 radio module options):
+   - `esp32dev-sx1262` - **Recommended** (newest, most efficient)
+   - `esp32dev-sx1276` - Widely available
+   - `esp32dev-cc1101` - Alternative low-power option
+   - `esp32dev-lr1121` - Latest LoRa technology
 
-**Default Configuration (esp32dev):**
-```c
-#define USE_SX1262             // Select radio chip
-#define PIN_RECEIVER_CS   27   // Chip Select
-#define PIN_RECEIVER_IRQ  21   // Interrupt (DIO0)
-#define PIN_RECEIVER_GPIO 33   // GPIO (DIO1 or BUSY)
-#define PIN_RECEIVER_RST  32   // Reset
+2. **Dedicated Boards** (pre-configured pins):
+   - LILYGO TTGO LoRa32 series (V1, V2, V2.1)
+   - Heltec Wireless Stick / WiFi LoRa 32 series (V2, V3, V4)
+   - LilyGo T3-S3 with different radio modules (SX1262, SX1276, LR1121)
+   - Seeed XIAO ESP32S3 with Wio-SX1262
+   - Generic ESP32-S3 fallback
+
+**See [Board Variants Guide](docs/BOARD_VARIANTS.md) for complete list and [Radio Modules Guide](docs/RADIO_MODULES.md) for technical details.**
+
+### Radio Module Selection
+
+Choose your radio module when building:
+
+```bash
+# For ESP32 DevKit with SX1262 (default, recommended)
+pio run -e esp32dev-sx1262
+
+# For ESP32 DevKit with SX1276
+pio run -e esp32dev-sx1276
+
+# For Heltec WiFi LoRa 32 V3
+pio run -e heltec-wifi-lora-32-v3
+
+# See all available variants
+pio boards | grep esp32
 ```
 
-**ESP32 → SX1262 Wiring (default pinout):**
+**Detailed comparison and pinout information**: [Radio Modules Guide](docs/RADIO_MODULES.md)
 
-| ESP32 | SX1262 | Signal |
-|-------|--------|--------|
-| 3V3   | VCC    | Power  |
-| GND   | GND    | Ground |
-| 18    | SCK    | SPI Clock |
-| 19    | MISO   | SPI Data In |
-| 23    | MOSI   | SPI Data Out |
-| 27    | NSS    | Chip Select |
-| 21    | DIO1   | Interrupt |
-| 33    | BUSY   | Busy Signal |
-| 32    | RESET  | Reset |
+### Optional: BMP280 Pressure Sensor
 
-**To use a different board:**
-1. Open `platformio.ini` and find your board environment
-2. Check the matching board variant in `WeatherSensorCfg.h`
-3. If using a generic ESP32 with custom pinning, uncomment the alternative `#define` lines (LORA_SPI_BUS, LORA_CS, LORA_SCK, LORA_MISO, LORA_MOSI)
-4. Rebuild: `pio run -e <your-environment> -t upload`
+The project supports **Adafruit BMP280** for barometric pressure measurement:
 
-**Board Variants:**
-Each board variant has pre-configured GPIO pins. See the [Board Variants Guide](docs/BOARD_VARIANTS.md) for the full list and corresponding `#define` in WeatherSensorCfg.h.
+#### Features
+- **Barometric Pressure** - for weather predictions
+- **Temperature** - from sensor (complements Bresser data)
+- **Altitude** - calculated from pressure
+- **I2C Interface** - requires only 2 GPIO pins + 3.3V + GND
+
+#### Wiring (I2C)
+```
+BMP280 Pin    ESP32 GPIO    Signal
+GND      →    GND           Ground
+3.3V     →    3.3V          Power
+SCL      →    GPIO 22       I2C Clock (default)
+SDA      →    GPIO 21       I2C Data (default)
+```
+
+**Optional: Change I2C pins in `src/config.h`:**
+```cpp
+#define PIN_BMP280_SDA 21      // I2C Data
+#define PIN_BMP280_SCL 22      // I2C Clock
+```
+
+#### Installation
+1. Physically connect the BMP280 module via I2C
+2. Library is already included: `adafruit/Adafruit BMP280 Library`
+3. Build and upload - sensor is auto-detected
+4. Pressure data will appear in Weather Underground and APRS uploads
+
+#### Example Setup
+- **Generic ESP32 DevKit** + SX1262 LoRa Module + BMP280
+  - Pin layout: LoRa on SPI, BMP280 on I2C
+  - Power: 5V USB or 3.7V battery with voltage regulator
+  - Excellent mobile station setup
+
+### GPIO Pin Configuration
+
+#### Default ESP32 DevKit Pinout
+```
+Radio Module (SPI):
+  SCK   → GPIO 18
+  MOSI  → GPIO 23
+  MISO  → GPIO 19
+  CS    → GPIO 27
+  IRQ   → GPIO 21
+  BUSY  → GPIO 33
+  RST   → GPIO 32
+
+Optional BMP280 (I2C):
+  SCL   → GPIO 22
+  SDA   → GPIO 21
+```
+
+**For other boards or custom configurations**, see:
+- **[Radio Modules Guide](docs/RADIO_MODULES.md)** - for detailed pinout by radio chip
+- **[src/WeatherSensorCfg.h](src/WeatherSensorCfg.h)** - for board-specific definitions
+
+#### Custom Pinning
+
+If using non-standard GPIO pins, edit [src/WeatherSensorCfg.h](src/WeatherSensorCfg.h):
+
+```cpp
+#elif defined(ESP32)
+    #define ESP32_VARIANT_SX1262    // Select radio module
+    
+    #if defined(ESP32_VARIANT_SX1262)
+        #define USE_SX1262
+        #define PIN_RECEIVER_CS   27   // ← Adjust these
+        #define PIN_RECEIVER_IRQ  21
+        #define PIN_RECEIVER_GPIO 33
+        #define PIN_RECEIVER_RST  32
+```
+
+Then rebuild:
+```bash
+pio run -e esp32dev-sx1262 -t upload
+```
 
 ## Configuration Details
 
