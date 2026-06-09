@@ -312,23 +312,44 @@ framework = arduino
 - **WiFiManager** - WiFi configuration
 - **Adafruit BMP280** - Pressure sensor driver (optional)
 
-## Troubleshooting
+## Documentation
 
-### APRS Connection Issues
-- Verify callsign and password are correct
-- Check latitude/longitude format (decimal, not DMS)
-- Ensure ESP32 has stable WiFi connection
-- Check Serial monitor for DNS resolution and auth errors
+Complete documentation is available in the [docs](docs/) folder:
 
-### Weather Underground Issues
-- Verify Station ID and Key in WU dashboard
-- Check that WiFi is connected before transmitting
-- Confirm `https://` endpoint is accessible from your network
+| Document | Purpose |
+|----------|---------|
+| **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** | System design, data flow, component relationships |
+| **[INSTALLATION.md](docs/INSTALLATION.md)** | Step-by-step setup for all board variants |
+| **[CONFIGURATION.md](docs/CONFIGURATION.md)** | Detailed configuration reference and advanced options |
+| **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | Problem solving and debugging guide |
+| **[DEVELOPMENT.md](docs/DEVELOPMENT.md)** | Guide for developers and code modifications |
+| **[FAQ.md](docs/FAQ.md)** | Frequently asked questions and quick answers |
+| **[BOARD_VARIANTS.md](docs/BOARD_VARIANTS.md)** | List of supported ESP32 board variants |
+| **[RADIO_MODULES.md](docs/RADIO_MODULES.md)** | 868 MHz radio module comparison and setup |
+| **[APRS_CONFIGURATION.md](docs/APRS_CONFIGURATION.md)** | Detailed APRS-IS setup instructions |
 
-### Rain Gauge Anomalies
-- Check if sensor reports valid rainfall data
-- Watch for midnight rollover if running 24/7
-- Monitor Serial debug output for rainHistory buffer status
+## Quick Start
+
+### New Users
+1. Read **[INSTALLATION.md](docs/INSTALLATION.md)** for hardware assembly and software setup
+2. See **[FAQ.md](docs/FAQ.md)** for common questions
+3. Use **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** if issues arise
+
+### Understanding the System
+- Read **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** to understand how components interact
+- Check **[CONFIGURATION.md](docs/CONFIGURATION.md)** for all available options
+
+### Developers
+- Start with **[DEVELOPMENT.md](docs/DEVELOPMENT.md)** for coding guidelines
+- Reference **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** for component details
+
+## Troubleshooting Quick Links
+
+- **📡 Sensor reception issues** → [TROUBLESHOOTING.md - Sensor Reception](docs/TROUBLESHOOTING.md#sensor-reception-problems)
+- **📶 WiFi problems** → [TROUBLESHOOTING.md - WiFi Connection](docs/TROUBLESHOOTING.md#wifi-connection-problems)
+- **🌤️ Weather Underground not receiving** → [TROUBLESHOOTING.md - WU Issues](docs/TROUBLESHOOTING.md#weather-underground-issues)
+- **📡 APRS beacon not appearing** → [TROUBLESHOOTING.md - APRS Problems](docs/TROUBLESHOOTING.md#aprs-is-connection-problems)
+- **❓ Have a question?** → [FAQ.md](docs/FAQ.md)
 
 ## Contributing
 
@@ -337,19 +358,23 @@ Contributions welcome! Please:
 2. Create a feature branch
 3. Test thoroughly
 4. Submit a pull request with description
+5. See [DEVELOPMENT.md](docs/DEVELOPMENT.md) for coding guidelines
 
 ## Credits
 
 - Built on [BresserWeatherSensorReceiver](https://github.com/matthias-bs/BresserWeatherSensorReceiver) by Matthias Prinke
 - APRS specification: https://www.aprs.org
 - RadioLib: https://github.com/jgromes/RadioLib
+- Weather Underground: https://www.wunderground.com
 
 ## Support
 
-For issues, questions, or feature requests:
-- Check [closed issues](https://github.com/MajakOwO/Bresser2WU/issues)
-- Review [APRS packet format reference](https://www.aprs.org/aprs11/spec-wx.txt)
-- Consult Weather Underground API documentation
+For help:
+- 📖 Read the comprehensive [documentation](docs/)
+- ❓ Check [FAQ.md](docs/FAQ.md) for common questions
+- 🐛 Search [existing GitHub issues](https://github.com/MajakOwO/Bresser2WU/issues)
+- 💬 Start a [GitHub Discussion](https://github.com/MajakOwO/Bresser2WU/discussions)
+- 📋 Create a new [GitHub Issue](https://github.com/MajakOwO/Bresser2WU/issues/new) if your question isn't answered
 
 ---
 
