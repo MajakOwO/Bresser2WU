@@ -31,6 +31,8 @@ jobs:
 
     runs-on: ubuntu-latest
     name: Build ${{ matrix.environment }}
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
