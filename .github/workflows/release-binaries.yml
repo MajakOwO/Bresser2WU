@@ -1,0 +1,88 @@
+name: Build Release Binaries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build-binaries:
+    strategy:
+      matrix:
+        environment:
+          - esp32dev
+          - ttgo-lora32-v2
+          - ttgo-lora32-v21
+          - heltec-wireless-stick-v3
+          - heltec-wifi-lora-32-v2
+          - heltec-wifi-lora-32-v3
+          - heltec-wifi-lora-32-v4
+          - adafruit-feather-esp32
+          - lilygo-t3-s3-sx1262
+          - lilygo-t3-s3-sx1276
+          - m5stack-core2
+          - ttgo-lora32-v1
+          - heltec-wireless-stick
+          - heltec-wireless-stick-lite
+          - adafruit-feather-esp32s2
+          - seeed-xiao-esp32s3
+          - lilygo-t3-s3-lr1121
+          - esp32s3-dev
+
+    runs-on: ubuntu-latest
+    name: Build ${{ matrix.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+
+      - name: Build firmware for ${{ matrix.environment }}
+        run: |
+          platformio run -e ${{ matrix.environment }}
+
+      - name: Extract build artifacts
+        id: extract
+        run: |
+          BUILD_DIR=".pio/build/${{ matrix.environment }}"
+          if [ -f "$BUILD_DIR/bootloader.bin" ] && [ -f "$BUILD_DIR/partitions.bin" ] && [ -f "$BUILD_DIR/firmware.bin" ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create combined firmware image
+        if: steps.extract.outputs.found == 'true'
+        run: |
+          BUILD_DIR=".pio/build/${{ matrix.environment }}"
+          python scripts/make_esp32_combined.py \
+            --bootloader "$BUILD_DIR/bootloader.bin" \
+            --partitions "$BUILD_DIR/partitions.bin" \
+            --app "$BUILD_DIR/firmware.bin" \
+            -o "combined_${{ matrix.environment }}.bin"
+
+      - name: Upload combined binary to release
+        if: steps.extract.outputs.found == 'true' && github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: combined_${{ matrix.environment }}.bin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload combined binary as artifact
+        if: steps.extract.outputs.found == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: combined-binaries
+          path: combined_${{ matrix.environment }}.bin
+          retention-days: 30

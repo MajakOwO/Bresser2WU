@@ -133,8 +133,8 @@ void APRS::sendLoginString() {
 
 String APRS::formatWeatherData(float tempF,
                                   float humidity,
-                                  float windSpeedMs,
-                                  float windGustMs,
+                                  float windSpeedMph,
+                                  float windGustMph,
                                   int windDirection,
                                   float rainfallHourly,
                                   float rainfallDaily,
@@ -146,12 +146,18 @@ String APRS::formatWeatherData(float tempF,
     // !DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXrXXXpXXX
     // Where:
     // _ddd = wind direction (0-360 degrees)
-    // /sss = sustained 1-minute wind speed (m/s)
-    // ggg = peak/gust wind speed (m/s) 
+    // /sss = sustained 1-minute wind speed (mph)
+    // ggg = peak/gust wind speed (mph)
     // tXXX = temperature in Fahrenheit (-99 to +150)
     // hXX = humidity in percent (00-99, where 00 = 100%)
-    // rXXX = rainfall in last hour (in 0.01" increments)
-    // pXXX = rainfall in last 24 hours (in 0.01" increments)
+    // rXXX = rainfall in last hour (0.01")
+    // pXXX = rainfall in last 24 hours (0.01")
+    // Optional extra fields appended after pXXX:
+    // PXXX = rainfall since midnight UTC (0.01")
+    // bXXXXX = pressure in tenths of millibar (e.g. 10132 = 1013.2 hPa)
+    // Lxxx = solar radiation in W/m^2 (optional)
+    // NOTE: APRS WX spec encodes rainfall as hundredths of an inch,
+    // so the input values here must be converted from mm before sending.
     
     // Convert coordinates to APRS format (degrees minutes)
     float latDeg = abs(latitude);
@@ -171,25 +177,45 @@ String APRS::formatWeatherData(float tempF,
     int humidity_aprs = (int)humidity;
     if (humidity_aprs >= 100) humidity_aprs = 0;
 
-    int rainHourlyHundredths = static_cast<int>(rainfallHourly * 100.0f + 0.5f);
+    // Convert rainfall from mm to hundredths of an inch for APRS encoding
+    float rainHourlyInches = rainfallHourly / 25.4f;
+    float rainDailyInches = rainfallDaily / 25.4f;
+
+    int rainHourlyHundredths = static_cast<int>(rainHourlyInches * 100.0f + 0.5f);
     if (rainHourlyHundredths < 0) rainHourlyHundredths = 0;
     if (rainHourlyHundredths > 999) rainHourlyHundredths = 999;
 
-    int rainDailyHundredths = static_cast<int>(rainfallDaily * 100.0f + 0.5f);
+    int rainDailyHundredths = static_cast<int>(rainDailyInches * 100.0f + 0.5f);
     if (rainDailyHundredths < 0) rainDailyHundredths = 0;
     if (rainDailyHundredths > 999) rainDailyHundredths = 999;
-    
+
+    // Convert pressure to tenths of millibar for bXXXXX
+    int pressureTenths = 0;
+    if (pressureInHg > 0.0f) {
+        float pressureHPa = pressureInHg * 33.8639f;
+        pressureTenths = static_cast<int>(pressureHPa * 10.0f + 0.5f);
+        if (pressureTenths < 0) pressureTenths = 0;
+    }
+
+    // Solar radiation as optional Lxxx field, clamp to 0-999
+    int solarRadiationInt = static_cast<int>(solarRadiation + 0.5f);
+    if (solarRadiationInt < 0) solarRadiationInt = 0;
+    if (solarRadiationInt > 999) solarRadiationInt = 999;
+
     snprintf(aprsData, sizeof(aprsData),
-        "!%02d%05.2f%c/%03d%05.2f%c_%03d/%03dg%03dt%03dh%02dr%03dp%03d",
+        "!%02d%05.2f%c/%03d%05.2f%c_%03d/%03dg%03dt%03dh%02dr%03dp%03dP%03db%05dL%03d",
         (int)latDeg, latMin, latChar,
         (int)lonDeg, lonMin, lonChar,
         (int)windDirection,
-        (int)windSpeedMs,
-        (int)windGustMs,
+        (int)windSpeedMph,
+        (int)windGustMph,
         (int)tempF,
         humidity_aprs,
         rainHourlyHundredths,
-        rainDailyHundredths
+        rainDailyHundredths,
+        rainDailyHundredths,
+        pressureTenths,
+        solarRadiationInt
     );
 
     String result = String(aprsData);
@@ -203,8 +229,8 @@ String APRS::formatWeatherData(float tempF,
     return result;
 }
 
-bool APRS::sendWeatherData(float tempF, float humidity, float windSpeedMs, 
-                          float windGustMs, int windDirection, float rainfallHourly,
+bool APRS::sendWeatherData(float tempF, float humidity, float windSpeedMph, 
+                          float windGustMph, int windDirection, float rainfallHourly,
                           float rainfallDaily,
                           float pressureInHg, float solarRadiation,
                           bool batteryOk, float rssiDbm) {
@@ -213,7 +239,7 @@ bool APRS::sendWeatherData(float tempF, float humidity, float windSpeedMs,
     }
     
     // Format the weather data as APRS packet
-    String weatherData = formatWeatherData(tempF, humidity, windSpeedMs, windGustMs, 
+    String weatherData = formatWeatherData(tempF, humidity, windSpeedMph, windGustMph, 
                                           windDirection, rainfallHourly, rainfallDaily, pressureInHg, solarRadiation,
                                           batteryOk, rssiDbm);
     
