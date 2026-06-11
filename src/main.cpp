@@ -30,6 +30,8 @@
 #include <math.h>
 
 // BMP280 Pressure Sensor Support
+// The firmware will always attempt to initialize BMP280 at startup.
+// If the sensor is not present, it will be skipped gracefully.
 #define USE_BMP280
 #ifdef USE_BMP280
 #ifdef SENSOR_TYPE_CO2
@@ -263,21 +265,34 @@ void setupWiFiManager() {
 }
 
 void setupSensors() {
-    ws.begin();
+    Serial.println("[SENS] setupSensors: before ws.begin");
+    int rc = ws.begin();
+    Serial.printf("[SENS] setupSensors: after ws.begin rc=%d\n", rc);
+    if (rc != RADIOLIB_ERR_NONE) {
+        Serial.printf("[SENS] Radio init failed: %d\n", rc);
+        Serial.println("[SENS] Radio receiver disabled");
+    }
 
 #ifdef USE_BMP280
-    Wire.begin(16, 17);  // SDA=16, SCL=17
+    Serial.println("[SENS] setupSensors: before BMP280 init");
+    Wire.begin();  // Use default I2C pins for ESP32 (usually SDA=21, SCL=22)
     bmpPresent = bmp.begin(0x76);
-    if (!bmpPresent) bmpPresent = bmp.begin(0x77);
-    Serial.println(bmpPresent ? "BMP280 OK" : "BMP280 NOT FOUND");
+    if (!bmpPresent) {
+        bmpPresent = bmp.begin(0x77);
+    }
+    Serial.printf("[SENS] BMP280 init result: %d\n", bmpPresent ? 1 : 0);
 #endif
 
+    Serial.println("[SENS] setupSensors: before configTime");
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    Serial.println("[SENS] setupSensors: after configTime");
 
-    // Initialize rain history
+    Serial.println("[SENS] setupSensors: before rain history init");
     for (int i = 0; i < 60; i++) {
         rainHistory[i].rainMM = 0;
     }
+    Serial.println("[SENS] setupSensors: after rain history init");
+    Serial.println("[SENS] setupSensors: return");
 }
 
 void setupAPRS() {
@@ -302,8 +317,13 @@ void setup() {
     setupPreferences();
     setupWiFiManager();
     Serial.println("WiFi connected");
+    Serial.println("Starting sensor initialization...");
     setupSensors();
+    Serial.println("Sensor initialization completed");
+    Serial.println("[SETUP] before setupAPRS");
+    Serial.println("Starting APRS initialization...");
     setupAPRS();
+    Serial.println("APRS initialization completed");
 
     // Send APRS status on boot (include repo link)
     {
@@ -435,6 +455,7 @@ void sendToWU() {
     Serial.println(url);
     HTTPClient http;
     http.begin(url);
+    http.setTimeout(10000);
     int code = http.GET();
     Serial.printf("WU HTTP: %d\n", code);
 

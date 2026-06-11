@@ -213,7 +213,13 @@ humidity=<0-100>
 windspeedmph=<wind speed>
 windgustmph=<gust speed>
 winddir=<0-360 degrees>
-rainin=<rainfall in inches>
+
+# Rainfall:
+# - rain in inches/hour is sent as precipratein (computed in firmware)
+# - daily rain remains sent as dailyrainin
+precipratein=<mm/h -> in/h converted to inches per hour>
+dailyrainin=<daily rain in inches>
+
 baromin=<pressure in inHg>  # If BMP280 available
 rtfreq=<report frequency>
 ```

@@ -206,12 +206,12 @@ void setFlag(void)
 
 int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, double frequency_offset)
 {
+    Serial.println("[SENS] WeatherSensor::begin start");
     uint8_t maxSensors = max_sensors_default;
     getSensorsCfg(maxSensors, rxFlags, enDecoders);
-    log_d("max_sensors: %u", maxSensors);
-    log_d("rx_flags: %u", rxFlags);
-    log_d("en_decoders: %u", enDecoders);
+    Serial.printf("[SENS] WeatherSensor::begin maxSensors=%u rxFlags=%u enDecoders=%u\n", maxSensors, rxFlags, enDecoders);
     sensor.resize(maxSensors);
+    Serial.println("[SENS] WeatherSensor::begin after sensor.resize");
 
     if (init_filters)
     {
@@ -234,11 +234,11 @@ int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, dou
 #endif
 
     double frequency = 868.3 + frequency_offset;
-    log_d("Setting frequency to %f MHz", 868.3 + frequency_offset);
+    Serial.printf("[SENS] Setting frequency to %f MHz\n", 868.3 + frequency_offset);
 
     // https://github.com/RFD-FHEM/RFFHEM/issues/607#issuecomment-830818445
     // Freq: 868.300 MHz, Bandwidth: 203 KHz, rAmpl: 33 dB, sens: 8 dB, DataRate: 8207.32 Baud
-    log_d("%s Initializing ... ", RECEIVER_CHIP);
+    Serial.printf("[SENS] %s Initializing ... \n", RECEIVER_CHIP);
 
     // carrier frequency:                   868.3 MHz
     // bit rate:                            8.22 kbps
@@ -246,6 +246,7 @@ int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, dou
     // Rx bandwidth:                        270.0 kHz (CC1101) / 250 kHz (SX1276) / 234.3 kHz (SX1262)
     // output power:                        10 dBm
     // preamble length:                     40 bits
+    Serial.println("[SENS] before radio.begin");
 #if defined(USE_CC1101)
     int state = radio.begin(frequency, 8.21, 57.136417, 270, 10, 32);
 #elif defined(USE_SX1276)
@@ -256,6 +257,7 @@ int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, dou
     // defined(USE_LR1121)
     int state = radio.beginGFSK(frequency, 8.21, 57.136417, 234.3, 10, 32);
 #endif
+    Serial.printf("[SENS] after radio.begin state=%d\n", state);
 
 #if defined(ARDUINO_LILYGO_T3S3_LR1121)
     // set RF switch control configuration
@@ -294,8 +296,7 @@ int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, dou
         if (state != RADIOLIB_ERR_NONE)
         {
             log_e("%s Error setting fixed packet length: [%d]", RECEIVER_CHIP, state);
-            while (true)
-                delay(10);
+            return state;
         }
 #if defined(USE_SX1262) || defined(USE_LR1121)
         state = radio.setCRC(0);
@@ -305,8 +306,7 @@ int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, dou
         if (state != RADIOLIB_ERR_NONE)
         {
             log_e("%s Error disabling crc filtering: [%d]", RECEIVER_CHIP, state);
-            while (true)
-                delay(10);
+            return state;
         }
 
 // Preamble: AA AA AA AA AA
@@ -324,30 +324,31 @@ int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, dou
         if (state != RADIOLIB_ERR_NONE)
         {
             log_e("%s Error setting sync words: [%d]", RECEIVER_CHIP, state);
-            while (true)
-                delay(10);
+            return state;
         }
     }
     else
     {
         log_e("%s Error initialising: [%d]", RECEIVER_CHIP, state);
-        while (true)
-            delay(10);
+        return state;
     }
     log_d("%s Setup complete - awaiting incoming messages...", RECEIVER_CHIP);
     rssi = radio.getRSSI();
 
     // Set callback function
+    Serial.println("[SENS] before setPacketReceivedAction");
     radio.setPacketReceivedAction(setFlag);
+    Serial.println("[SENS] after setPacketReceivedAction");
 
     state = radio.startReceive();
+    Serial.printf("[SENS] after startReceive state=%d\n", state);
     if (state != RADIOLIB_ERR_NONE)
     {
         log_e("%s startReceive() failed, code %d", RECEIVER_CHIP, state);
-        while (true)
-            delay(10);
+        return state;
     }
 
+    Serial.println("[SENS] WeatherSensor::begin complete");
     return state;
 }
 

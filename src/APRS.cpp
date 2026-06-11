@@ -106,6 +106,13 @@ bool APRS::connectToServer() {
         Serial.println("[APRS] Connection failed");
         return false;
     }
+
+    client.setNoDelay(true);
+
+    if (!connectedNow) {
+        Serial.println("[APRS] Connection failed");
+        return false;
+    }
     
     Serial.println("[APRS] Connected!");
     
@@ -125,6 +132,7 @@ void APRS::sendLoginString() {
     
     // Wait a bit for server response
     delay(500);
+    yield();
     while (client.available()) {
         String line = client.readStringUntil('\n');
         Serial.printf("[APRS] Server: %s\n", line.c_str());

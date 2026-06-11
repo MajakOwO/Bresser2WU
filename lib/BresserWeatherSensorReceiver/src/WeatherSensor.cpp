@@ -294,8 +294,7 @@ int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, dou
         if (state != RADIOLIB_ERR_NONE)
         {
             log_e("%s Error setting fixed packet length: [%d]", RECEIVER_CHIP, state);
-            while (true)
-                delay(10);
+            return state;
         }
 #if defined(USE_SX1262) || defined(USE_LR1121)
         state = radio.setCRC(0);
@@ -305,8 +304,7 @@ int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, dou
         if (state != RADIOLIB_ERR_NONE)
         {
             log_e("%s Error disabling crc filtering: [%d]", RECEIVER_CHIP, state);
-            while (true)
-                delay(10);
+            return state;
         }
 
 // Preamble: AA AA AA AA AA
@@ -324,15 +322,13 @@ int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, dou
         if (state != RADIOLIB_ERR_NONE)
         {
             log_e("%s Error setting sync words: [%d]", RECEIVER_CHIP, state);
-            while (true)
-                delay(10);
+            return state;
         }
     }
     else
     {
         log_e("%s Error initialising: [%d]", RECEIVER_CHIP, state);
-        while (true)
-            delay(10);
+        return state;
     }
     log_d("%s Setup complete - awaiting incoming messages...", RECEIVER_CHIP);
     rssi = radio.getRSSI();
@@ -344,8 +340,7 @@ int16_t WeatherSensor::begin(uint8_t max_sensors_default, bool init_filters, dou
     if (state != RADIOLIB_ERR_NONE)
     {
         log_e("%s startReceive() failed, code %d", RECEIVER_CHIP, state);
-        while (true)
-            delay(10);
+        return state;
     }
 
     return state;
