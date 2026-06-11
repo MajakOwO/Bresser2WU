@@ -43,6 +43,10 @@ Adafruit_BMP280 bmp;
 #endif
 bool bmpPresent = false;
 
+// Default BMP280 I2C address tries (some modules use 0x77)
+static constexpr uint8_t BMP280_I2C_ADDR_1 = 0x76;
+static constexpr uint8_t BMP280_I2C_ADDR_2 = 0x77;
+
 // Global Objects
 Preferences prefs;
 WiFiManager wm;
@@ -275,10 +279,11 @@ void setupSensors() {
 
 #ifdef USE_BMP280
     Serial.println("[SENS] setupSensors: before BMP280 init");
-    Wire.begin();  // Use default I2C pins for ESP32 (usually SDA=21, SCL=22)
-    bmpPresent = bmp.begin(0x76);
+    // Your BMP280 wiring (user reports): SDA=16, SCL=17
+    Wire.begin(16, 17);
+    bmpPresent = bmp.begin(BMP280_I2C_ADDR_1);
     if (!bmpPresent) {
-        bmpPresent = bmp.begin(0x77);
+        bmpPresent = bmp.begin(BMP280_I2C_ADDR_2);
     }
     Serial.printf("[SENS] BMP280 init result: %d\n", bmpPresent ? 1 : 0);
 #endif
@@ -442,10 +447,11 @@ void sendToWU() {
         "&rainin=" + String(weatherData.rainHourlyIn, 3) +
         "&dailyrainin=" + String(weatherData.rainDailyIn, 3) +
         "&UV=" + String(ws.sensor[i].w.uv, 1) +
+
         "&solarradiation=" + String(weatherData.solarRadiation, 1);
 
 #ifdef USE_BMP280
-    if (bmpPresent && weatherData.pressureInHg > 0) {
+    if (bmpPresent && weatherData.pressureHPa > 0) {
         url += "&baromin=" + String(weatherData.pressureInHg, 2);
     }
 #endif

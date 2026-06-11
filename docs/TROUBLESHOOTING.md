@@ -507,8 +507,9 @@ Humidity: 200% (impossible - should be 0-100%)
      ```
      BMP280 GND ↔ ESP32 GND
      BMP280 3.3V ↔ ESP32 3.3V
-     BMP280 SCL ↔ GPIO 22
-     BMP280 SDA ↔ GPIO 21
+     BMP280 SDA ↔ GPIO 16
+     BMP280 SCL ↔ GPIO 17
+
      ```
    - Wiggle connector (poor contact)
 

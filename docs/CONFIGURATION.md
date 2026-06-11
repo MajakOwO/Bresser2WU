@@ -147,15 +147,30 @@ Each variant defines pins. Example for SX1262:
 
 **Note**: SPI pins (SCK, MOSI, MISO) are hardware-assigned. Only CS, IRQ, GPIO, RST can change.
 
-#### I2C BMP280 Configuration
+#### BMP280 I2C Configuration
 
 ```cpp
 #define USE_BMP280                  // Enable BMP280 sensor
-#define PIN_SDA     21              // I2C Data (SDA)
-#define PIN_SCL     22              // I2C Clock (SCL)
 #define BMP280_ADDR 0x76            // I2C address (0x76 or 0x77)
 #define BMP280_MODE BMX280_SLEEP_MODE  // Sleep/Normal/Forced
 ```
+
+### I2C pinout (ESP32 ↔ BMP280)
+
+Wiring depends on your hardware. In this project, the BMP280 I2C pins are set directly in code via `Wire.begin(SDA, SCL)`.
+
+Example (in `src/main.cpp`):
+```cpp
+Wire.begin(16, 17);  // SDA=16, SCL=17
+```
+
+BMP280 pinout (what to wire):
+- **VCC** → 3.3V
+- **GND** → GND
+- **SDA** → ESP32 GPIO **16** (current project default for your hardware setup)
+- **SCL** → ESP32 GPIO **17** (current project default for your hardware setup)
+
+
 
 #### Board Selection
 
@@ -220,7 +235,7 @@ winddir=<0-360 degrees>
 precipratein=<mm/h -> in/h converted to inches per hour>
 dailyrainin=<daily rain in inches>
 
-baromin=<pressure in inHg>  # If BMP280 available
+baromin=<pressure in inHg>  # If BMP280 available (sent as &baromin if BMP280 init succeeded)
 rtfreq=<report frequency>
 ```
 

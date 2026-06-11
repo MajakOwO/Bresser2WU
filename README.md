@@ -47,6 +47,7 @@ Built on ESP32 with PlatformIO, featuring WiFiManager for easy configuration.
 - 868 MHz antenna for sensor reception
 - USB power or battery supply
 
+
 ## Software Setup
 
 ### Prerequisites
@@ -143,15 +144,16 @@ The project supports **Adafruit BMP280** for barometric pressure measurement:
 BMP280 Pin    ESP32 GPIO    Signal
 GND      →    GND           Ground
 3.3V     →    3.3V          Power
-SCL      →    GPIO 22       I2C Clock (default)
-SDA      →    GPIO 21       I2C Data (default)
+SDA      →    GPIO 16       I2C Data (default)
+SCL      →    GPIO 17       I2C Clock (default)
 ```
 
 **Optional: Change I2C pins in `src/config.h`:**
 ```cpp
-#define PIN_BMP280_SDA 21      // I2C Data
-#define PIN_BMP280_SCL 22      // I2C Clock
+#define PIN_BMP280_SDA 16      // I2C Data
+#define PIN_BMP280_SCL 17      // I2C Clock
 ```
+
 
 #### Installation
 1. Physically connect the BMP280 module via I2C
