@@ -5,12 +5,20 @@ All notable changes to the Bresser Weather Sensor to WU + APRS-IS Gateway projec
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-06-11
+
+### Fixed
+
+- Weather Underground: precipitation "Precip Rate" is now sent as `precipratein` (mm/h -> in/h) calculated from delta of cumulative rain over time.
+  - Previously `rainin` was effectively treated as rate.
+
 ## [1.0.1] - 2026-06-08
 
 ### Changed
 
 - APRS wind speed and gust transmission changed to meters per second (m/s)
 - APRS weather packet now includes barometric pressure as `Pxxxxx` (tenths of millibars)
+
 
 ## [1.0.0] - 2026
 
