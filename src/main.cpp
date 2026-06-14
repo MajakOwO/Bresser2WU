@@ -101,12 +101,24 @@ struct WeatherData {
     float pressureHPa;
     float pressureInHg;
     float solarRadiation;
+
+    // Rain totals
     float rainHourlyMM;
     float rainHourlyIn;
     float rainDailyMM;
     float rainDailyIn;
+
+    // Precip rate (intensity)
+    float precipRateMMH;  // mm/h
+    float precipRateInH;  // inch/h
 };
 WeatherData weatherData;
+
+// Precip rate baseline (delta of cumulative rain counter over time)
+unsigned long lastRainRateTsMillis = 0;
+float lastRainRateRainMM = -1;
+
+
 
 // Rain Gauge Management Functions
 
@@ -389,18 +401,48 @@ void calculateWeatherData(const WeatherSensor::Sensor& sensor) {
     weatherData.pressureInHg = weatherData.pressureHPa * 0.0295299831;
     
     // Rain
+    float currentRainMM = sensor.w.rain_mm;
+
+    // Total rain in the last ~60 minutes (derived from history)
     weatherData.rainHourlyMM = 0;
     if (rainBufferFilled) {
-        weatherData.rainHourlyMM = sensor.w.rain_mm - rainHistory[rainIndex].rainMM;
+        weatherData.rainHourlyMM = currentRainMM - rainHistory[rainIndex].rainMM;
     } else if (rainIndex > 0) {
-        weatherData.rainHourlyMM = sensor.w.rain_mm - rainHistory[0].rainMM;
+        weatherData.rainHourlyMM = currentRainMM - rainHistory[0].rainMM;
     }
     if (weatherData.rainHourlyMM < 0) weatherData.rainHourlyMM = 0;
     weatherData.rainHourlyIn = weatherData.rainHourlyMM / 25.4;
-    
-    weatherData.rainDailyMM = sensor.w.rain_mm - rainAtMidnightMM;
+
+    // Daily rain
+    weatherData.rainDailyMM = currentRainMM - rainAtMidnightMM;
     if (weatherData.rainDailyMM < 0) weatherData.rainDailyMM = 0;
     weatherData.rainDailyIn = weatherData.rainDailyMM / 25.4;
+
+    // Precipitation rate = delta rain counter / delta time
+    weatherData.precipRateMMH = 0;
+    weatherData.precipRateInH = 0;
+
+    unsigned long nowMs = millis();
+    if (lastRainRateTsMillis != 0 && lastRainRateRainMM >= 0) {
+        unsigned long dtMs = nowMs - lastRainRateTsMillis; // unsigned handles wrap-around
+        float dtHours = dtMs / 3600000.0f;
+        if (dtHours > 0.00001f) {
+            float deltaRainMM = currentRainMM - lastRainRateRainMM;
+
+            // Counter rollover/reset handling
+            if (deltaRainMM < 0) {
+                deltaRainMM = 0;
+            }
+
+            weatherData.precipRateMMH = deltaRainMM / dtHours;
+            if (weatherData.precipRateMMH < 0) weatherData.precipRateMMH = 0;
+            weatherData.precipRateInH = weatherData.precipRateMMH / 25.4;
+        }
+    }
+
+    // Update reference values for the next rate calculation.
+    lastRainRateTsMillis = nowMs;
+    lastRainRateRainMM = currentRainMM;
 }
 
 // Service Transmission Functions
@@ -426,10 +468,17 @@ void sendToWU() {
         prefs.putFloat("rainMid", rainAtMidnightMM);
     }
 
+    // Initialize precip rate baseline on first WU send
+    if (lastRainRateTsMillis == 0 || lastRainRateRainMM < 0) {
+        lastRainRateTsMillis = millis();
+        lastRainRateRainMM = currentRain;
+    }
+
     // Calculate all weather data
     calculateWeatherData(ws.sensor[i]);
     
     printRainDebug(currentRain);
+
     Serial.printf("Dew Point: %.1f C (%.1f F)\n", weatherData.dewpointC, weatherData.dewpointF);
     Serial.printf("BMP280: %.1f hPa (%.2f inHg)\n", weatherData.pressureHPa, weatherData.pressureInHg);
 
@@ -444,8 +493,9 @@ void sendToWU() {
         "&windspeedmph=" + String(weatherData.windSpeedMph, 1) +
         "&windgustmph=" + String(weatherData.windGustMph, 1) +
         "&winddir=" + String(weatherData.windDirection) +
-        "&rainin=" + String(weatherData.rainHourlyIn, 3) +
+        "&rainin=" + String(weatherData.precipRateInH, 3) +
         "&dailyrainin=" + String(weatherData.rainDailyIn, 3) +
+
         "&UV=" + String(ws.sensor[i].w.uv, 1) +
 
         "&solarradiation=" + String(weatherData.solarRadiation, 1);
