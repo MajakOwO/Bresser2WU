@@ -312,28 +312,28 @@
 #elif defined(ARDUINO_HELTEC_WIFI_LORA_32_V2)
     #pragma message("ARDUINO_HELTEC_WIFI_LORA_32_V2 defined; using on-board transceiver")
     #define USE_SX1276
-    // Use pinning for Heltec Wireless Stick or WiFi LoRa32 V2, respectively
-    #define PIN_RECEIVER_CS   SS
-    #define PIN_RECEIVER_IRQ  DIO0
-    #define PIN_RECEIVER_GPIO DIO1
-    #define PIN_RECEIVER_RST  RST_LoRa
+    // Use pinning for Heltec WiFi LoRa32 V2 with SX1276
+    #define PIN_RECEIVER_CS   18
+    #define PIN_RECEIVER_IRQ  26
+    #define PIN_RECEIVER_GPIO 33
+    #define PIN_RECEIVER_RST  14
 
 #elif defined(ARDUINO_HELTEC_WIFI_LORA_32_V3) || defined(ARDUINO_HELTEC_VISION_MASTER_T190)
     #pragma message("ARDUINO_HELTEC_WIFI_LORA_32_V3 / ARDUINO_HELTEC_VISION_MASTER_T190 defined; using on-board transceiver")
     #define USE_SX1262
-    #define PIN_RECEIVER_CS   SS
-    #define PIN_RECEIVER_IRQ  DIO0
-    #define PIN_RECEIVER_GPIO BUSY_LoRa
-    #define PIN_RECEIVER_RST  RST_LoRa
+    #define PIN_RECEIVER_CS   8
+    #define PIN_RECEIVER_IRQ  14
+    #define PIN_RECEIVER_GPIO 13
+    #define PIN_RECEIVER_RST  12
 
 #elif defined(ARDUINO_HELTEC_WIFI_LORA_32_V4)
     // Heltec WiFi LoRa 32(V4)
     #pragma message("ARDUINO_HELTEC_WIFI_LORA_32_V4 defined; using on-board transceiver")
     #define USE_SX1262
-    #define PIN_RECEIVER_CS   SS
-    #define PIN_RECEIVER_IRQ  DIO0
-    #define PIN_RECEIVER_GPIO BUSY_LoRa
-    #define PIN_RECEIVER_RST  RST_LoRa
+    #define PIN_RECEIVER_CS   8
+    #define PIN_RECEIVER_IRQ  14
+    #define PIN_RECEIVER_GPIO 13
+    #define PIN_RECEIVER_RST  12
 
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2)
     #pragma message("ARDUINO_ADAFRUIT_FEATHER_ESP32S2 defined; assuming RFM95W FeatherWing will be used")
