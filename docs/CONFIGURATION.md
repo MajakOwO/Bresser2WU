@@ -6,31 +6,30 @@ Detailed reference for all configuration options for Bresser Weather Sensor to W
 
 Configuration is stored in **ESP32 NVS (Non-Volatile Storage)** and persists across reboots. Two ways to configure:
 
-### 1. WiFiManager Web Portal (Recommended - Runtime)
+### 1. Web configuration portal (Recommended - Runtime)
 - Easiest method
 - No code changes required
 - Works after device boots
-- Access via: `192.168.4.1` (if WiFi fails) or `192.168.1.100/wifisettings` (web portal)
+- Access via: `http://192.168.4.1`
 
 ### 2. Direct Code Modification (Development)
 - Edit `src/WeatherSensorCfg.h` and `src/main.cpp`
 - Requires recompilation and upload
 - Use for permanent hardware changes
 
-## WiFiManager Configuration Portal
+## Web Configuration Portal
 
 ### Access the Portal
 
 **First Time (no WiFi saved):**
 1. Device starts as Access Point
 2. Connect to WiFi: **`BresserWX`** (no password)
-3. Open browser: **`192.168.4.1`**
-4. Captive portal automatically appears (or click "Sign In")
+3. Open browser: **`http://192.168.4.1`**
+4. The configuration page appears
 
 **After WiFi Connected:**
-1. Open browser to ESP32's IP address (see serial monitor)
-2. Go to: **`http://<ESP32_IP>/wifisettings`**
-3. Enter WiFiManager password (default: check code)
+1. Open browser to the ESP32's IP address shown on the serial monitor
+2. If the device remains in AP mode, open: **`http://192.168.4.1`**
 
 ### Configuration Parameters
 
@@ -38,22 +37,21 @@ Configuration is stored in **ESP32 NVS (Non-Volatile Storage)** and persists acr
 ```
 SSID:     Your WiFi network name (2.4 GHz recommended)
 Password: WiFi password (max 64 characters)
-Hostname: Device hostname (e.g., "BresserWX") - optional
-```
+``` 
 
 #### Weather Underground Reporting
 ```
-Station ID:  Unique ID (e.g., "KIZZMY" + "50")
+Station ID:  Unique ID (e.g., "KIZZMY50")
              Get from: https://www.wunderground.com/weather/api
              Format:   CCSSXYYY or CCSSXYYY-N
              Where: CC=country, SS=state, X=area, YYY=number, N=suffix
 
 API Key:     Personal API key from Weather Underground
              Generate at: https://www.wunderground.com/weather/api
-             Keep secret - only shared with WU servers
+             Keep secret
              
 Reporting:   Automatic every 15 seconds (hardcoded)
-             Posts to: rtupdate.wunderground.com
+             Posts to: weatherstation.wunderground.com
 ```
 
 #### APRS-IS Configuration
@@ -64,47 +62,60 @@ Callsign:    Amateur radio call with SSID (e.g., "SQ9ABC-13")
              
 Passcode:    APRS authentication code (NOT your radio password!)
              Generate: https://www.heywhatsthat.com/aprs_passcode.html
-             Enter your callsign there, get 5-digit code
-             Keep secret - identifies your station on APRS-IS
+             Enter your callsign there, get a 5-digit code
+             Keep secret
 
 Latitude:    Decimal degrees (e.g., "52.2297" for Warsaw)
              Negative = South, Positive = North
              Range: -90 to +90
-             Format: DD.DDDD (4+ decimal places for accuracy)
+             Format: DD.DDDD
 
 Longitude:   Decimal degrees (e.g., "21.0122" for Warsaw)
              Negative = West, Positive = East
              Range: -180 to +180
-             Format: DD.DDDD (4+ decimal places for accuracy)
+             Format: DD.DDDD
              
 Comment:     Optional text for APRS packet (max 43 chars)
              Examples: "Weather Station", "QTH: Garden", "Temp+Wind"
-             Appears on aprs.fi and ADS-B Exchange
+             Appears on aprs.fi
 ```
+
+#### MQTT Broker Configuration
+```
+Broker:      Hostname or IP address of MQTT server
+             Examples: "192.168.1.100" or "mqtt.example.com"
+             Leave empty to disable MQTT publishing
+             
+Port:        MQTT port (default 1883 for unencrypted)
+             Standard: 1883
+             Secure:   8883 (TLS/SSL not currently supported)
+             
+Topic:       Topic to publish weather data (max 64 chars)
+             Examples: "weather/station", "bresserwx/data"
+             Data format: JSON
+             Publishing frequency: Every 15 seconds
+             
+Username:    MQTT authentication username (optional)
+             Leave empty if broker has no authentication
+             Max 32 characters
+             
+Password:    MQTT authentication password (optional)
+             Leave empty if broker has no authentication
+             Max 32 characters
+```
+
+See [MQTT_INTEGRATION.md](MQTT_INTEGRATION.md) for detailed MQTT setup, Home Assistant integration, and examples.
 
 ### Saving Configuration
 
 1. Fill all required fields
 2. Click **Save**
-3. Device will:
+3. The device will:
    - Validate inputs
    - Save to NVS
    - Reboot
    - Connect to WiFi
    - Start transmitting
-
-### Resetting Configuration
-
-**Option 1: WiFiManager Reset Portal**
-1. Access WiFiManager portal (`192.168.4.1`)
-2. Click "Reset settings"
-3. Device will erase configuration and reboot
-
-**Option 2: Hard Reset (code)**
-1. Edit `src/main.cpp`
-2. Uncomment: `wm.resetSettings();` in `setupWiFiManager()`
-3. Upload and run once
-4. Comment it back out and reupload
 
 ## Compile-Time Configuration
 

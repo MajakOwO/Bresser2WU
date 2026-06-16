@@ -9,9 +9,11 @@ Common issues and solutions for Bresser Weather Sensor to WU + APRS-IS Gateway.
 3. [WiFi Connection Problems](#wifi-connection-problems)
 4. [Weather Underground Issues](#weather-underground-issues)
 5. [APRS-IS Connection Problems](#aprs-is-connection-problems)
-6. [Data Display Issues](#data-display-issues)
-7. [Hardware Issues](#hardware-issues)
-8. [Firmware Issues](#firmware-issues)
+6. [MQTT Publishing Issues](#mqtt-publishing-issues)
+7. [OLED Display Issues](#oled-display-issues)
+8. [Data Display Issues](#data-display-issues)
+9. [Hardware Issues](#hardware-issues)
+10. [Firmware Issues](#firmware-issues)
 
 ---
 
@@ -413,6 +415,257 @@ Humidity: 200% (impossible - should be 0-100%)
    - Server may reject if too many from same IP
    - Rare unless multiple devices using same callsign
    - Try different SSID number (e.g., `-14` instead of `-13`)
+
+---
+
+## MQTT Publishing Issues
+
+### Issue: MQTT Broker Connection Fails
+
+**Serial Output**:
+```
+[MQTT] Connect failed, rc=-2
+[MQTT] WiFi nie jest połączone
+```
+
+**Causes & Solutions**:
+
+1. **WiFi Not Connected**
+   - MQTT requires active WiFi connection
+   - Check WiFi configuration first
+   - Verify WiFi connection with `AT+CWJAP?`
+
+2. **Wrong Broker Address**
+   - Verify broker hostname/IP in web portal
+   - Try pinging from another device: `ping 192.168.1.100`
+   - Check for typos in broker address
+
+3. **Wrong Port**
+   - Default: 1883 (unencrypted)
+   - Check broker configuration
+   - TLS/SSL (8883) not currently supported
+
+4. **Broker Requires Authentication**
+   - Check if broker needs username/password
+   - Configure in web portal: MQTT Username & Password
+   - Verify credentials are correct
+
+5. **Firewall Blocking MQTT**
+   - Check if router allows outgoing port 1883
+   - Try connecting from another device to same broker
+   - Temporarily disable firewall for testing
+
+### Issue: MQTT Data Not Arriving
+
+**Serial Output**:
+```
+[MQTT] Connected
+[MQTT] Publish FAILED
+```
+
+**Causes & Solutions**:
+
+1. **Topic Mismatch**
+   - Verify you're subscribing to correct topic
+   - Check topic name has no typos
+   - Example subscribe:
+     ```bash
+     mosquitto_sub -h 192.168.1.100 -t weather/station
+     ```
+
+2. **Payload Size**
+   - JSON payload is ~300-400 bytes
+   - Buffer size is 512 bytes (sufficient)
+   - If getting truncated, check `setBufferSize(512)` in code
+
+3. **Publishing Frequency**
+   - Data published every 15 seconds
+   - Wait at least 15 seconds after power-on
+   - Check serial monitor for `[MQTT] Publish OK`
+
+4. **Broker Storage Disabled**
+   - Some MQTT brokers don't persist messages
+   - Subscribe before device publishes
+   - Or check broker logs for published messages
+
+### Issue: MQTT Username/Password Not Working
+
+**Serial Output**:
+```
+[MQTT] Connect failed, rc=4
+```
+
+**Causes & Solutions**:
+
+1. **Wrong Credentials**
+   - Re-enter username and password in web portal
+   - Check for spaces, special characters
+   - Save and reboot device
+
+2. **Credentials Have Spaces**
+   - If username/password has spaces: not supported
+   - Remove spaces and try again
+
+3. **Broker Configuration**
+   - Verify broker accepts password auth
+   - Check broker ACLs (Access Control Lists)
+   - Try with empty password first (if allowed)
+
+### Issue: Connection Drops Frequently
+
+**Problem**: MQTT connects, then disconnects after few seconds
+
+**Causes & Solutions**:
+
+1. **WiFi Instability**
+   - Check WiFi signal strength
+   - Move closer to WiFi router
+   - Check for interference (microwaves, cordless phones)
+
+2. **Broker Load**
+   - Broker might be overwhelmed
+   - Check broker CPU/memory usage
+   - Try connecting to different broker
+
+3. **Network Timeout**
+   - Firewall might timeout idle connections
+   - Add keep-alive or heartbeat
+   - Currently not configurable - hardcoded
+
+---
+
+## OLED Display Issues
+
+### Issue: OLED Display Not Showing Anything
+
+**Serial Output**:
+```
+[SETUP] Display not initialized
+```
+
+**Causes & Solutions**:
+
+1. **I2C Wiring**
+   - Check connections:
+     ```
+     SSD1306 GND ↔ ESP32 GND
+     SSD1306 3.3V ↔ ESP32 3.3V
+     SSD1306 SDA ↔ GPIO 16
+     SSD1306 SCL ↔ GPIO 17
+     ```
+   - Verify tight connections
+   - Try different I2C cable
+
+2. **Display I2C Address**
+   - SSD1306 typically at 0x3C or 0x78
+   - Check with I2C scanner to confirm
+   - If address different, modify code:
+     ```cpp
+     #define OLED_ADDR 0x78  // Change from 0x3C
+     ```
+
+3. **Display Not Powered**
+   - Verify 3.3V supply (use multimeter)
+   - Check power LED on display module
+   - Try different power source
+
+4. **Library Not Installed**
+   - Verify `adafruit/Adafruit SSD1306` in lib_deps
+   - Rebuild firmware:
+     ```bash
+     pio run -e esp32dev -t clean
+     pio run -e esp32dev
+     ```
+
+5. **Display Defective**
+   - Test with Arduino example sketch
+   - Try different I2C address
+   - Check for broken solder joints
+
+### Issue: OLED Shows Partial/Garbled Content
+
+**Problem**: Some text missing or unreadable
+
+**Causes & Solutions**:
+
+1. **Wrong Buffer Size**
+   - Display should be 128x64 pixels
+   - If getting partial content: buffer size mismatch
+   - Check in code: `Adafruit_SSD1306 display(128, 64, &Wire, -1);`
+
+2. **I2C Speed**
+   - Standard I2C: 100 kHz
+   - Fast I2C: 400 kHz
+   - If display has issues: try slower speed
+
+3. **Font Rendering Issue**
+   - Clear and redraw:
+     ```cpp
+     display.clearDisplay();
+     display.display();
+     delay(100);
+     // Then redraw with content
+     ```
+
+4. **Update Rate**
+   - Display updates every ~100 ms
+   - If text keeps changing: normal behavior
+   - If frozen: check `display.display()` is called
+
+### Issue: LoRa/BMP280 Status Shows Error on OLED
+
+**Display Shows**:
+```
+LoRa ERROR
+BMP280 OFF
+NO WIFI
+```
+
+**Causes & Solutions**:
+
+1. **LoRa ERROR**
+   - Radio module not initializing
+   - Check radio wiring (CS, IRQ, RST pins)
+   - Verify radio module type matches code
+   - Try TEST_WEATHER mode to exclude sensor issues
+
+2. **BMP280 OFF**
+   - Pressure sensor not detected
+   - Check I2C wiring (same as display)
+   - Verify correct I2C address
+   - If not needed: ignore this message
+
+3. **NO WIFI**
+   - WiFi credentials not configured
+   - Access captive portal: `192.168.4.1`
+   - Configure WiFi and save
+
+4. **WIFI FAILED**
+   - WiFi credentials wrong
+   - WiFi network not reachable
+   - Check SSID spelling
+   - Try moving closer to WiFi router
+
+### Issue: OLED Display Shows Freeze
+
+**Problem**: Weather data stops updating
+
+**Causes & Solutions**:
+
+1. **I2C Bus Hang**
+   - Restart device
+   - Check I2C wiring for shorts
+   - Try software reset
+
+2. **Main Loop Blocked**
+   - OLED rendering blocking main loop
+   - Should only take ~10 ms
+   - If longer: buffer issue
+
+3. **Power Supply Issue**
+   - I2C pullups might be too weak
+   - Add 4.7k resistors on SDA/SCL
+   - Check 3.3V supply voltage stability
 
 ---
 

@@ -10,29 +10,27 @@ This project now includes support for sending weather station data to APRS-IS (A
 
 APRS is a real-time tactical information system for rapidly exchanging station data. The APRS-IS component allows amateur radio operators and weather station owners to report their position and sensor data to a worldwide network accessible via the internet.
 
-## Quick Configuration via WiFiManager
+## Quick Configuration via Web Portal
 
 ### First Run Setup
 
 1. Power on the ESP32
-2. Connect to WiFi AP `BresserWX` (if not already connected)
-3. Open your browser and go to the WiFiManager portal (usually `192.168.4.1`)
-4. Click "Configure WiFi" or let it show the configuration page
-5. Scroll down to find the custom APRS parameters:
+2. Connect to the WiFi AP: `BresserWX`
+3. Open your browser and go to `http://192.168.4.1`
+4. The configuration page will load
+5. Enter the custom APRS parameters:
    - **APRS Callsign**: e.g., `SQ9XXX-13`
    - **APRS Password**: Your APRS-IS password
    - **Latitude**: e.g., `52.1234`
    - **Longitude**: e.g., `21.0567`
 6. Fill in the values and save
-7. Device will reboot and connect to your WiFi
+7. The device will reboot and connect to your WiFi
 
 ### Modifying APRS Settings Later
 
-1. Open WiFiManager portal:
-   - **Option A**: Press and hold the WiFiManager reset button
-   - **Option B**: Connect to `BresserWX` WiFi AP if normal WiFi is unavailable
-2. Navigate to configuration page
-3. Update APRS parameters
+1. Connect to the `BresserWX` AP if normal WiFi is unavailable
+2. Open your browser to `http://192.168.4.1`
+3. Update APRS parameters on the configuration page
 4. Save and reboot
 
 ### What Gets Saved

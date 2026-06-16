@@ -460,7 +460,9 @@
     // ===== SELECT ONE OF THE VARIANTS BELOW =====
     
     // --- Variant 1: SX1262 (LoRa module) ---
+    #ifndef ESP32_VARIANT_SX1262
     #define ESP32_VARIANT_SX1262
+    #endif
     //#define ESP32_VARIANT_SX1276
     //#define ESP32_VARIANT_CC1101
     //#define ESP32_VARIANT_LR1121

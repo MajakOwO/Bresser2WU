@@ -5,17 +5,20 @@
 A weather station gateway that receives data from Bresser wireless weather sensors and simultaneously forwards observations to:
 - **Weather Underground (WU)** - for weather dashboard integration
 - **APRS-IS Network** - for amateur radio integration and real-time mapping via [aprs.fi](https://aprs.fi)
+- **MQTT Broker** - for home automation and IoT integration
 
-Built on ESP32 with PlatformIO, featuring WiFiManager for easy configuration.
+Built on ESP32 with PlatformIO, featuring an integrated web configuration portal and optional OLED display support.
 
 ## Features
 
-- 📡 **Dual Service Reporting**
+- 📡 **Triple Service Reporting**
   - Weather Underground: Every 15 seconds
   - APRS-IS: Every 10 minutes
+  - MQTT: Real-time publishing to configurable broker
+  - OTA firmware updates via built-in web server on port 8080
   
 - ⚙️ **Easy Configuration**
-  - Web-based WiFiManager for WiFi and API credentials
+  - Web-based configuration portal for WiFi and API credentials
   - No code changes needed - all settings via captive portal
   - Credentials stored in ESP32 NVS (non-volatile storage)
 
@@ -33,19 +36,36 @@ Built on ESP32 with PlatformIO, featuring WiFiManager for easy configuration.
 - 🔋 **Health Metrics**
   - Battery status (OK/Low) displayed in APRS beacon
   - RSSI signal strength in APRS comment
+  - Hardware status display (LoRa, BMP280, WiFi)
 
 - 📱 **Multi-Board Support**
-  - Supports 10+ ESP32 board variants (LILYGO TTGO, Heltec, Adafruit, M5Stack, LilyGo T3-S3, and more)
+  - Supports 20+ ESP32 board variants (LILYGO TTGO, Heltec, Adafruit, M5Stack, LilyGo T3-S3, and more)
   - Easy variant selection in `platformio.ini`
   - See [Board Variants Guide](docs/BOARD_VARIANTS.md) for details
+
+- 🎨 **Optional OLED Display (SSD1306)**
+  - Real-time weather visualization (128x64 OLED)
+  - 7-line weather data display with temperature, humidity, wind, rainfall
+  - System status indicators (WiFi, LoRa, BMP280, IP address)
+  - Boot screen with repository link
+  - See [OLED Display Guide](docs/OLED_DISPLAY.md) for setup
+
+- 🧪 **Test Weather Mode**
+  - Firmware testing without a physical sensor
+  - Emulated weather data for development and debugging
+  - Perfect for testing WU/APRS/MQTT integration
+  - See [TEST_WEATHER Mode Guide](docs/TEST_WEATHER_MODE.md) for details
 
 ## Hardware Requirements
 
 - **ESP32** microcontroller (WROOM or equivalent)
 - **Bresser 7-in-1 Weather Sensor** (868 MHz receiver included)
 - **Optional: BMP280** pressure sensor (I2C: GPIO 16=SDA, GPIO 17=SCL)
+- **Optional: SSD1306 OLED Display** (128x64, I2C: GPIO 16=SDA, GPIO 17=SCL)
 - 868 MHz antenna for sensor reception
 - USB power or battery supply
+
+**Note:** OLED display and BMP280 share the same I2C pins. Only one pressure sensor can be used at a time.
 
 
 ## Software Setup
@@ -79,13 +99,14 @@ Built on ESP32 with PlatformIO, featuring WiFiManager for easy configuration.
      ```
    Or use VS Code PlatformIO tasks
 
-4. **Configure via WiFiManager**
+4. **Configure via the built-in web portal**
    - Power on the ESP32
-   - Connect to `BresserWX` WiFi AP
+   - Connect to the `BresserWX` WiFi AP
    - Open browser to `192.168.4.1`
    - Enter WiFi SSID and password
    - Configure Weather Underground: Station ID + Key
    - Configure APRS: Callsign (e.g., SQ8NA-15), Password, Latitude, Longitude, Comment (optional)
+   - Configure MQTT broker settings if desired
    - Save and restart
 
 ## Hardware Configuration
@@ -136,7 +157,6 @@ The project supports **Adafruit BMP280** for barometric pressure measurement:
 #### Features
 - **Barometric Pressure** - for weather predictions
 - **Temperature** - from sensor (complements Bresser data)
-- **Altitude** - calculated from pressure
 - **I2C Interface** - requires only 2 GPIO pins + 3.3V + GND
 
 #### Wiring (I2C)
@@ -181,8 +201,8 @@ Radio Module (SPI):
   RST   → GPIO 32
 
 Optional BMP280 (I2C):
-  SCL   → GPIO 22
-  SDA   → GPIO 21
+  SCL   → GPIO 17
+  SDA   → GPIO 16
 ```
 
 **For other boards or custom configurations**, see:
@@ -219,7 +239,7 @@ pio run -e esp32dev-sx1262 -t upload
 2. Add a new personal weather station at [https://www.wunderground.com/member/devices](https://www.wunderground.com/member/devices)
 3. Select **"Other"** as the hardware type
 4. Get your **Station ID** and **API Key** from your device dashboard
-5. During WiFiManager configuration, enter these credentials
+5. During the web configuration portal setup, enter these credentials
 
 **Settings:**
 - **Station ID**: Your WU station identifier (e.g., `KZZXY50`)
@@ -312,7 +332,10 @@ framework = arduino
 - **BresserWeatherSensorReceiver** - Weather sensor decoder
 - **RadioLib** (7.6.0) - 868 MHz radio interface
 - **WiFiManager** - WiFi configuration
+- **ArduinoJson** - JSON serialization (for MQTT)
+- **PubSubClient** - MQTT client library
 - **Adafruit BMP280** - Pressure sensor driver (optional)
+- **Adafruit SSD1306** - OLED display driver (optional)
 
 ## Documentation
 
@@ -329,6 +352,9 @@ Complete documentation is available in the [docs](docs/) folder:
 | **[BOARD_VARIANTS.md](docs/BOARD_VARIANTS.md)** | List of supported ESP32 board variants |
 | **[RADIO_MODULES.md](docs/RADIO_MODULES.md)** | 868 MHz radio module comparison and setup |
 | **[APRS_CONFIGURATION.md](docs/APRS_CONFIGURATION.md)** | Detailed APRS-IS setup instructions |
+| **[MQTT_INTEGRATION.md](docs/MQTT_INTEGRATION.md)** | MQTT broker setup and Home Assistant integration |
+| **[OLED_DISPLAY.md](docs/OLED_DISPLAY.md)** | SSD1306 OLED display configuration and customization |
+| **[TEST_WEATHER_MODE.md](docs/TEST_WEATHER_MODE.md)** | Firmware testing without a physical sensor |
 
 ## Quick Start
 

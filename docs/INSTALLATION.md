@@ -9,7 +9,7 @@ Complete step-by-step guide to set up Bresser Weather Sensor to WU + APRS-IS Gat
   - Generic ESP32-DevKit (most affordable)
   - LILYGO TTGO LoRa32 series
   - Heltec Wireless Stick series
-  - Any of 20+ supported variants
+  - Any of supported variants
 - **Radio Module** (select one for generic ESP32):
   - SX1262 (recommended - most efficient)
   - SX1276 / RFM95W (widely available)
@@ -32,9 +32,9 @@ Complete step-by-step guide to set up Bresser Weather Sensor to WU + APRS-IS Gat
   - Create account
   - Add personal weather station
   - Get Station ID and API Key
-- **APRS-IS**: https://www.aprs-is.net/
+- **APRS-IS**:
   - Register amateur radio callsign
-  - Get APRS passcode (https://www.heywhatsthat.com/aprs_passcode.html)
+  - Get APRS passcode (https://apps.magicbug.co.uk/passcode/)
 
 ## Step 1: Hardware Assembly
 
@@ -354,37 +354,6 @@ You should see:
 2. Search for your callsign (e.g., `SQ9ABC-13`)
 3. You should see position and weather data
 4. Data updates every 10 minutes
-
-## Step 9: Permanent Installation
-
-### Power Supply Options
-
-1. **USB Power**: Plug into USB adapter + wall socket
-2. **Battery**: 
-   - 4× AA batteries with voltage regulator (3.3V)
-   - Lithium cells (3.7V single cell with regulator)
-   - USB power bank (best for outdoor)
-3. **Solar**: Solar panel + battery + charge controller
-
-### Housing & Antenna
-
-1. **Weatherproof enclosure**: 3D-printed or plastic box
-2. **Antenna placement**:
-   - Outdoor location for best reception
-   - High position (roof/pole)
-   - Vertical orientation (for LoRa)
-   - Away from metal structures
-3. **Cable routing**:
-   - Protect antenna cable from weather
-   - Strain relief at connectors
-   - Coax cable optional (low power)
-
-### WiFi Placement
-
-For best WiFi range:
-- Place ESP32 near router (if possible)
-- Avoid metal enclosures (mesh blocks signal)
-- Consider WiFi extender for remote locations
 
 ## Troubleshooting Installation
 

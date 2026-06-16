@@ -54,15 +54,31 @@ def parse_hex(s):
 def main():
     p = argparse.ArgumentParser(description='Create combined ESP32 flash image')
     p.add_argument('--bootloader', help='path to bootloader.bin')
-    p.add_argument('--bootloader-offset', default='0x1000', help='bootloader offset (default 0x1000)')
+    p.add_argument('--bootloader-offset', default=None, help='bootloader offset (default depends on --arch: esp32 -> 0x1000, esp32s3 -> 0x0)')
     p.add_argument('--partitions', help='path to partitions.bin')
-    p.add_argument('--partitions-offset', default='0x8000', help='partitions offset (default 0x8000)')
+    p.add_argument('--partitions-offset', default=None, help='partitions offset (default depends on --arch: 0x8000)')
     p.add_argument('--app', help='path to app/firmware bin (e.g. firmware.bin, app.bin)')
-    p.add_argument('--app-offset', default='0x10000', help='app offset (default 0x10000)')
+    p.add_argument('--app-offset', default=None, help='app offset (default depends on --arch: 0x10000)')
+    p.add_argument('--arch', choices=['esp32', 'esp32s3'], default=None,
+                   help='Target architecture; when set, default offsets are: esp32 -> bootloader 0x1000, esp32s3 -> bootloader 0x0')
     p.add_argument('-o', '--output', default='combined.bin', help='output file')
 
     args = p.parse_args()
+    # If arch not provided, try to infer from filenames (simple heuristic)
+    if args.arch is None and args.bootloader:
+        bl = args.bootloader.lower()
+        if 's3' in bl or 'esp32s3' in bl:
+            args.arch = 'esp32s3'
+        else:
+            args.arch = 'esp32'
 
+    # If user didn't provide specific offsets, choose sensible defaults by architecture
+    if args.bootloader_offset is None:
+        args.bootloader_offset = '0x1000' if args.arch == 'esp32' else '0x0'
+    if args.partitions_offset is None:
+        args.partitions_offset = '0x8000'
+    if args.app_offset is None:
+        args.app_offset = '0x10000'
     comps = []
     if args.bootloader:
         data = read_file(args.bootloader)

@@ -50,7 +50,12 @@ void APRS::setComment(const String& cmt) {
 
 bool APRS::connectToServer() {
     if (connected) {
-        return true;
+        if (client.connected()) {
+            return true;
+        }
+        Serial.println("[APRS] Previous APRS TCP connection lost, reconnecting");
+        client.stop();
+        connected = false;
     }
     
     // Don't retry too frequently (but allow first attempt immediately)

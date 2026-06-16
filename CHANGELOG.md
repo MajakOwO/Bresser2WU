@@ -5,6 +5,79 @@ All notable changes to the Bresser Weather Sensor to WU + APRS-IS Gateway projec
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-06-16
+
+### Added
+
+- **OTA Firmware Updates**
+  - Built-in OTA update server available on port `8080`
+  - OTA update link exposed on the web configuration portal
+  - Supports firmware upload without USB connection
+
+- **Built-in Web Configuration Portal**
+  - Custom configuration page for WiFi, Weather Underground, APRS, and MQTT settings
+  - Status dashboard shows WiFi, APRS, sensor, and OTA state
+  - Stored settings persist in ESP32 NVS non-volatile storage
+
+- **MQTT Support**
+  - New `sendToMQTT()` function publishes weather data to MQTT broker
+  - Configurable MQTT broker address, port, topic, username, password
+  - JSON payload format with `ArduinoJson` library integration
+  - Settings stored in ESP32 NVS (non-volatile storage)
+  - Automatic reconnection with buffer size optimization (512 bytes)
+
+- **Extended OLED Display (SSD1306)**
+  - Boot screen with repository link: `MajakOwO/Bresser2WU`
+  - Rich weather data display (7 lines):
+    - Temperature (°C) and humidity (%)
+    - Dew point (°C) and barometric pressure (hPa)
+    - Wind speed/gust (m/s) and direction (degrees)
+    - Daily and hourly rainfall (mm)
+    - Precipitation rate (mm/h) and solar radiation (W/m²)
+    - WiFi and hardware status
+    - IP address or disconnected status
+  - Hardware status indicators:
+    - `LoRa ERROR` when radio initialization fails
+    - `BMP280 OFF` when pressure sensor is not detected
+    - `NO WIFI` when WiFi credentials are not configured
+    - `WIFI FAILED` when WiFi connection attempt failed
+    - `Status: OK` when all systems operational
+
+- **Test Weather Mode (TEST_WEATHER)**
+  - New `esp32dev-test-weather` environment with emulated weather data
+  - `generateTestWeatherData()` function provides synthetic values for testing
+  - Allows firmware testing without active Bresser sensor
+  - Compatible with WU, APRS, and MQTT transmission
+  - Build flag: `-D TEST_WEATHER`
+
+- **WiFi Status Tracking**
+  - Global flags: `wifiConfigured`, `wifiConnected`, `loraPresent`, `loraInitFailed`
+  - Real-time status updates on OLED display
+  - Helps diagnose connection and hardware issues
+
+### Changed
+
+- **platformio.ini Structure**
+  - Fixed invalid top-level `lib_deps` section (moved to per-environment)
+  - Added `adafruit/Adafruit SSD1306` library to all environments
+  - Added `knolleary/PubSubClient` to all environments (for MQTT)
+
+- **OLED Layout Optimization**
+  - Consolidated weather data to fit 128x64 display
+  - Grouped related measurements on single lines (T+H, DP+P, W+D)
+  - Separate lines for error messages
+  - Improved font sizing and positioning
+
+- **Configuration Portal**
+  - Added status dashboard and OTA update link to the web config page
+  - Improved on-device feedback for WiFi, APRS, and sensor health
+
+### Fixed
+
+- Precipitation rate calculation now uses 60-second baseline intervals to reduce erratic updates
+- MQTT buffer size insufficient for JSON weather payloads (increased to 512 bytes)
+- `platformio.ini` per-environment dependencies fixed for all board variants
+
 ## [1.0.2] - 2026-06-11
 
 ### Fixed
@@ -30,8 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Weather Underground**: HTTP POST every 15 seconds
     - **APRS-IS**: TCP beacon every 10 minutes
   
-- **WiFiManager Configuration**
-  - Web-based captive portal setup (AP: `BresserWX`)
+- **Web Configuration Portal**
+  - Custom web page available when AP `BresserWX` is active
   - Configurable Weather Underground credentials (Station ID, API Key)
   - Configurable APRS-IS parameters (Callsign, Password, Latitude, Longitude, Comment)
   - Settings persisted in ESP32 NVS storage
@@ -48,6 +121,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - TCP connection to `rotate.aprs.net:14580`
   - Automatic reconnection with 5-minute retry interval
   - APRS weather packet format: `!DDMM.hhN/DDDMM.hhW_ddd/sssgggtXXXhXXPXXXXXrXXXpXXX`
+
   - Device health metrics: Battery status (OK/Low) and RSSI in beacon comment
   - Per-spec encoding: humidity (00=100%, 01-99=percent), wind (m/s), temperature (°F), rain (0.01"), pressure (Pxxxxx in tenths of millibars)
 
