@@ -836,34 +836,22 @@ void calculateWeatherData(const WeatherSensor::Sensor& sensor) {
     if (weatherData.rainDailyMM < 0) weatherData.rainDailyMM = 0;
     weatherData.rainDailyIn = weatherData.rainDailyMM / 25.4;
 
-    // Precipitation rate = delta rain counter / delta time
-    // Only update the value every PRECIP_RATE_UPDATE_INTERVAL to avoid erratic jumps.
-    // Keep the last computed rate between updates.
-    unsigned long nowMs = millis();
-    if (lastRainRateTsMillis == 0 || lastRainRateRainMM < 0) {
-        // Initialize on first call
-        lastRainRateTsMillis = nowMs;
-        lastRainRateRainMM = currentRainMM;
+    // Precipitation rate is smoothed using recent rain history.
+    // If 60 minutes of rain history is available, use the hourly total as mm/h.
+    if (rainBufferFilled) {
+        weatherData.precipRateMMH = weatherData.rainHourlyMM;
+        weatherData.precipRateInH = weatherData.precipRateMMH / 25.4;
+    } else if (rainIndex > 0) {
+        float elapsedMinutes = (float)rainIndex;
+        if (elapsedMinutes < 1.0f) {
+            elapsedMinutes = 1.0f;
+        }
+        weatherData.precipRateMMH = (currentRainMM - rainHistory[0].rainMM) * (60.0f / elapsedMinutes);
+        if (weatherData.precipRateMMH < 0) weatherData.precipRateMMH = 0;
+        weatherData.precipRateInH = weatherData.precipRateMMH / 25.4;
+    } else {
         weatherData.precipRateMMH = 0;
         weatherData.precipRateInH = 0;
-    } else if (nowMs - lastRainRateTsMillis >= PRECIP_RATE_UPDATE_INTERVAL) {
-        unsigned long dtMs = nowMs - lastRainRateTsMillis; // unsigned handles wrap-around
-        float dtHours = dtMs / 3600000.0f;
-        float deltaRainMM = currentRainMM - lastRainRateRainMM;
-
-        // Counter rollover/reset handling
-        if (deltaRainMM < 0) {
-            deltaRainMM = 0;
-        }
-
-        if (dtHours > 0.00001f) {
-            weatherData.precipRateMMH = deltaRainMM / dtHours;
-            if (weatherData.precipRateMMH < 0) weatherData.precipRateMMH = 0;
-            weatherData.precipRateInH = weatherData.precipRateMMH / 25.4;
-        }
-
-        lastRainRateTsMillis = nowMs;
-        lastRainRateRainMM = currentRainMM;
     }
 }
 
