@@ -435,6 +435,9 @@ void handleSaveConfig() {
         }
         if (WiFi.status() == WL_CONNECTED) {
             Serial.printf("[WIFI] Reconnected to %s\n", wifiSSID.c_str());
+            WiFi.softAPdisconnect(true);
+            WiFi.mode(WIFI_STA);
+            Serial.println("[WIFI] Access point stopped after successful STA connection");
         } else {
             Serial.println("[WIFI] Reconnect failed, still on AP");
         }
